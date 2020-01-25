@@ -1,0 +1,41 @@
+{
+    "name": "scrapy/scrapy",
+    "description": "PHP web scraping made easy.",
+    "keywords": [
+        "web",
+        "scraping"
+    ],
+    "homepage": "https://github.com/aleksa-sukovic/scrapy",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Aleksa Sukovic",
+            "email": "sukovic.aleksa@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Scrapy\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Scrapy\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
