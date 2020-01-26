@@ -67,6 +67,14 @@ class ScrapyBuilder
         return $this;
     }
 
+    public function onParseError($callback): ScrapyBuilder
+    {
+        if ($this->isFunction($callback)) {
+            $this->scrapy->setOnParseErrorCallback($callback);
+        }
+        return $this;
+    }
+
     public function reader(Reader $reader): ScrapyBuilder
     {
         $this->scrapy->setReader($reader);

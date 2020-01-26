@@ -19,17 +19,18 @@ class Scrapy
 
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
+    protected $onParseErrorCallback;
     protected $html;
     protected $parsers;
     protected $params;
-    protected $errors;
+    protected $failed;
 
     public function __construct()
     {
         $this->parsers = [];
-        $this->errors = [];
         $this->params = [];
         $this->html = '';
+        $this->failed = false;
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
@@ -46,7 +47,7 @@ class Scrapy
             try {
                 $parser->process($crawler, $result, $this->params);
             } catch (Exception $e) {
-                $this->errors[] = ['parser' => get_class($parser), 'message' => $e->getMessage(), 'code' => $e->getCode()];
+                $this->handleParserError($parser);
             }
         }
 
@@ -63,6 +64,14 @@ class Scrapy
     {
         return $this->isFunction($this->afterScrapeCallback) ?
             $this->callFunction($this->afterScrapeCallback, $scrapingResult) : $scrapingResult;
+    }
+
+    protected function handleParserError(IParser $parser): void
+    {
+        if ($this->isFunction($this->onParseErrorCallback)) {
+            $this->callFunction($this->onParseErrorCallback, $parser);
+        }
+        $this->failed = true;
     }
 
     public function addParser(IParser $parser): void
@@ -107,12 +116,7 @@ class Scrapy
 
     public function failed(): bool
     {
-        return count($this->errors) > 0;
-    }
-
-    public function errors(): array
-    {
-        return $this->errors;
+        return $this->failed;
     }
 
     public function reader(): Reader
@@ -128,5 +132,15 @@ class Scrapy
     public function html(): string
     {
         return $this->html;
+    }
+
+    public function setOnParseErrorCallback($callback): void
+    {
+        $this->onParseErrorCallback = $callback;
+    }
+
+    public function onParseErrorCallback(): callable
+    {
+        return $this->onParseErrorCallback;
     }
 }

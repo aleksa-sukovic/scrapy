@@ -78,6 +78,17 @@ class ScrapyBuilderTest extends TestCase
         $this->assertEquals('Called!', $scrapy->afterScrapeCallback()());
     }
 
+    public function test_on_parse_error_callback_is_set()
+    {
+        $callback = function () { return 'Called!'; };
+        $scrapy = ScrapyBuilder::make()
+            ->onParseError($callback)
+            ->build();
+
+        $this->assertIsCallable($scrapy->onParseErrorCallback());
+        $this->assertEquals('Called!', $scrapy->onParseErrorCallback()());
+    }
+
     public function test_adding_parser_as_a_function()
     {
         $scrapy = ScrapyBuilder::make()

@@ -103,13 +103,28 @@ class ScrapyTest extends TestCase
     public function test_error_handling_method()
     {
         $this->readerMock->shouldReceive('read')->andReturn('');
-        $parser1 = new class implements IParser {
+        $parser = new class implements IParser {
             public function process(Crawly $crawler, &$output, $params) { throw new ScrapeException('Random exception.'); }
         };
-        $scrapy = $this->builder->withParser($parser1)->build();
+        $scrapy = $this->builder->withParser($parser)->build();
 
         $scrapy->scrape('https://www.some-url.com');
         $this->assertTrue($scrapy->failed());
-        $this->assertEquals(1, count($scrapy->errors()));
+    }
+
+    public function test_parser_error_callback_is_triggered()
+    {
+        $that = $this;
+        $this->readerMock->shouldReceive('read')->andReturn('');
+        $parser = new class implements IParser {
+            public function process(Crawly $crawler, &$output, $params) { throw new ScrapeException('Random parsing exception.'); }
+        };
+
+       $this->builder->withParser($parser)
+            ->onParseError(function (IParser $parser) use ($that) {
+                $that->assertTrue(true);
+            })
+           ->build()
+           ->scrape('https://www.some-url.com');
     }
 }
