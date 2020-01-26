@@ -8,6 +8,9 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Crawly
 {
+    public static $NODE_VALUE = '_text';
+    public static $NODE_NAME  = '_name';
+
 	/**
 	 * @var Crawler
 	 */
@@ -25,13 +28,14 @@ class Crawly
 
 	public function __construct($html)
 	{
-		$this->crawler = new Crawler($html);
+        $this->crawler = $this->makeCrawler($html);
+        $this->activeCrawler = $this->crawler;
 		$this->trim = false;
 	}
 
 	public function raw(): Crawler
 	{
-		return $this->crawler;
+		return $this->activeCrawler;
 	}
 
 	public function first(): Crawly
@@ -55,11 +59,13 @@ class Crawly
 		return $this;
 	}
 
-	public function pluck($attributes): array
+	public function pluck($attributes)
 	{
 		try {
-			return $this->activeCrawler->extract($attributes);
-		} catch (Exception $e) {
+		    $attributes = is_array($attributes) ? $attributes : [$attributes];
+
+			return $this->activeCrawler->extract($attributes)[0];
+		} catch (Exception|Error $e) {
 			return [];
 		}
 	}
@@ -112,4 +118,18 @@ class Crawly
 			return $default;
 		}
 	}
+
+    protected function makeCrawler(string $html): Crawler
+    {
+        if ($this->isHtml($html)) return new Crawler($html);
+
+        $crawler = new Crawler($html);
+        $crawler->filter('div')->first();
+        return $crawler;
+    }
+
+    protected function isHtml(string $html): bool
+    {
+        return strlen(strip_tags($html)) !== strlen($html);
+    }
 }
