@@ -70,7 +70,7 @@ class Crawly
 		}
 	}
 
-	public function at($index): Crawly
+	public function nth($index): Crawly
 	{
 		$this->activeCrawler = $this->activeCrawler->eq($index);
 

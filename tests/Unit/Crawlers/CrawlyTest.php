@@ -93,7 +93,7 @@ class CrawlyTest extends TestCase
     {
         $crawly = new Crawly('<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>');
 
-        $this->assertEquals(3, $crawly->filter('li')->at(2)->int());
+        $this->assertEquals(3, $crawly->filter('li')->nth(2)->int());
     }
 
     public function test_raw_method()
