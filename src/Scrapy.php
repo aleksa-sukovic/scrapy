@@ -122,16 +122,27 @@ class Scrapy
         return $this;
     }
 
-    public function withParams(array $params): Scrapy
+
+    public function errors(): array
+    {
+        return $this->errors;
+    }
+
+    public function params(): array
+    {
+        return $this->params;
+    }
+
+    public function setParams(array $params): Scrapy
     {
         $this->params = $params;
 
         return $this;
     }
 
-    public function errors(): array
+    public function reader(): Reader
     {
-        return $this->errors;
+        return $this->reader;
     }
 
     public function hasErrors(): bool
