@@ -4,6 +4,8 @@ namespace Scrapy\Tests\Unit\Builders;
 
 use PHPUnit\Framework\TestCase;
 use Scrapy\Builders\ScrapyBuilder;
+use Scrapy\Crawlers\Crawly;
+use Scrapy\Parsers\FunctionParser;
 
 class ScrapyBuilderTest extends TestCase
 {
@@ -74,5 +76,17 @@ class ScrapyBuilderTest extends TestCase
 
         $this->assertIsCallable($scrapy->afterScrapeCallback());
         $this->assertEquals('Called!', $scrapy->afterScrapeCallback()());
+    }
+
+    public function test_adding_parser_as_a_function()
+    {
+        $scrapy = ScrapyBuilder::make()
+            ->withParser(function (Crawly $crawly, &$output, $params) {
+                //
+            })
+            ->build();
+
+        $this->assertEquals(1, count($scrapy->parsers()));
+        $this->assertInstanceOf(FunctionParser::class, $scrapy->parsers()[0]);
     }
 }

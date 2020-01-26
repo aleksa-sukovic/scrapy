@@ -29,7 +29,7 @@ class Scrapy
         $this->parsers = [];
         $this->errors = [];
         $this->params = [];
-        $this->reader = new Reader;
+        $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
     }

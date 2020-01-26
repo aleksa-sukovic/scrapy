@@ -2,6 +2,7 @@
 
 namespace Scrapy\Builders;
 
+use Scrapy\Parsers\FunctionParser;
 use Scrapy\Scrapy;
 use Scrapy\Traits\HandleCallable;
 
@@ -33,6 +34,7 @@ class ScrapyBuilder
     public function withParser($parser): ScrapyBuilder
     {
         if (is_string($parser)) $parser = new $parser;
+        if (is_callable($parser)) $parser = new FunctionParser($parser);
 
         $this->scrapy->addParser($parser);
 
