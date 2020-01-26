@@ -121,11 +121,13 @@ class Crawly
 
     protected function makeCrawler(string $html): Crawler
     {
-        if ($this->isHtml($html)) return new Crawler($html);
-
-        $crawler = new Crawler($html);
-        $crawler->filter('div')->first();
-        return $crawler;
+        if (empty($html)) {
+            return new Crawler('');
+        } else if ($this->isHtml($html)) {
+            return new Crawler($html);
+        } else {
+            return (new Crawler("<div>$html</div>"))->filter('div')->first();
+        }
     }
 
     protected function isHtml(string $html): bool
