@@ -14,33 +14,14 @@ class Scrapy
     use HandleCallable;
 
     /**
-     * @var string[]
-     */
-    protected $parsers;
-
-    /**
      * @var Reader
      */
     protected $reader;
 
-    /**
-     * @var callable
-     */
     protected $beforeScrapeCallback;
-
-    /**
-     * @var callable
-     */
     protected $afterScrapeCallback;
-
-    /**
-     * @var array
-     */
+    protected $parsers;
     protected $params;
-
-    /**
-     * @var array
-     */
     protected $errors;
 
     public function __construct()
@@ -82,34 +63,6 @@ class Scrapy
         return $result;
     }
 
-    /**
-     * @param callable $callback
-     *     - Function to be called before running raw html trough parsers.
-     * 		 Function receives string representing raw html of page.
-     *
-     * @return Scrapy
-     */
-    public function beforeScrape(callable $callback): Scrapy
-    {
-        $this->beforeScrapeCallback = $callback;
-
-        return $this;
-    }
-
-    /**
-     * @param callable $callback
-     *     - Function to be called after parsers have processed the input.
-     *       Processed object is passed as first argument of the function.
-     *
-     * @return Scrapy
-     */
-    public function afterScrape(callable $callback): Scrapy
-    {
-        $this->afterScrapeCallback = $callback;
-
-        return $this;
-    }
-
     public function setParsers(array $parsers): void
     {
         $this->parsers = $parsers;
@@ -120,9 +73,9 @@ class Scrapy
         $this->parsers[] = $parser;
     }
 
-    public function errors(): array
+    public function parsers(): array
     {
-        return $this->errors;
+        return $this->parsers;
     }
 
     public function params(): array
@@ -130,20 +83,38 @@ class Scrapy
         return $this->params;
     }
 
-    public function parsers(): array
-    {
-        return $this->parsers;
-    }
-
-    public function setParams(array $params): Scrapy
+    public function setParams(array $params): void
     {
         $this->params = $params;
+    }
 
-        return $this;
+    public function setBeforeScrapeCallback($callback): void
+    {
+        $this->beforeScrapeCallback = $callback;
+    }
+
+    public function beforeScrapeCallback(): ?callable
+    {
+        return $this->beforeScrapeCallback;
+    }
+
+    public function setAfterScrapeCallback($callback): void
+    {
+        $this->afterScrapeCallback = $callback;
+    }
+
+    public function afterScrapeCallback(): ?callable
+    {
+        return $this->afterScrapeCallback;
     }
 
     public function hasErrors(): bool
     {
         return count($this->errors) > 0;
+    }
+
+    public function errors(): array
+    {
+        return $this->errors;
     }
 }

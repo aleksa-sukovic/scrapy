@@ -2,12 +2,13 @@
 
 namespace Scrapy\Builders;
 
-use Scrapy\Exceptions\InvalidParser;
-use Scrapy\Parsers\IParser;
 use Scrapy\Scrapy;
+use Scrapy\Traits\HandleCallable;
 
 class ScrapyBuilder
 {
+    use HandleCallable;
+
     public static function make(): ScrapyBuilder
     {
         return new ScrapyBuilder();
@@ -44,6 +45,22 @@ class ScrapyBuilder
             $this->withParser($parser);
         }
 
+        return $this;
+    }
+
+    public function beforeScrape($callback): ScrapyBuilder
+    {
+        if ($this->isFunction($callback)) {
+            $this->scrapy->setBeforeScrapeCallback($callback);
+        }
+        return $this;
+    }
+
+    public function afterScrape($callback): ScrapyBuilder
+    {
+        if ($this->isFunction($callback)) {
+            $this->scrapy->setAfterScrapeCallback($callback);
+        }
         return $this;
     }
 
