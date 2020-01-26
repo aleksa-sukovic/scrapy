@@ -128,6 +128,15 @@ class Crawly
         }
     }
 
+    public function exists(): bool
+    {
+        try {
+            return $this->activeCrawler->text();
+        } catch (Exception|Error $e) {
+            return false;
+        }
+    }
+
     protected function makeCrawler(string $html): Crawler
     {
         if (empty($html)) {

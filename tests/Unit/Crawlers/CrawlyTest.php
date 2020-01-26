@@ -135,4 +135,23 @@ class CrawlyTest extends TestCase
 
         $this->assertEquals('', $html);
     }
+
+    public function test_exists_method_returns_true()
+    {
+        $crawly1 = new Crawly('<div><span>Hello World!</span></div>');
+        $crawly2 = new Crawly('<div><li>1</li><li><span>2</span></li><li>3</li></div>');
+
+        $this->assertTrue($crawly1->filter('span')->exists());
+        $this->assertTrue($crawly2->filter('li')->nth(1)->filter('span')->exists());
+    }
+
+    public function test_exists_method_returns_false()
+    {
+        $crawly1 = new Crawly('<div>Hello World!</div>');
+        $crawly2 = new Crawly('<ul><li>1</li><li>2</li><li>3</li></ul>');
+
+        $this->assertFalse($crawly1->filter('span')->exists());
+        $this->assertFalse($crawly2->filter('li')->nth(2)->filter('span')->exists());
+        $this->assertFalse($crawly2->filter('div')->filter('.example-class')->nth(5)->exists());
+    }
 }
