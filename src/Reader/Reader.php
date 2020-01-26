@@ -2,11 +2,11 @@
 
 namespace Scrapy\Reader;
 
-use Fleka\Scraper\Exceptions\ScrapeException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Uri;
+use Scrapy\Exceptions\ScrapeException;
 
 class Reader
 {
@@ -31,9 +31,9 @@ class Reader
 	public function read($url): string
 	{
 		try {
-			$response = $this->guzzleClient->get( new Uri($url), ['synchronous' => true]);
+			$response = $this->guzzleClient->get(new Uri($url), ['synchronous' => true]);
 
-			return (string)$response->getBody();
+			return (string) $response->getBody();
 		} catch (ClientException|ServerException $e) {
 			throw new ScrapeException("Url '$url' could not be read.");
 		}

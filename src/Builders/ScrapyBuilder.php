@@ -3,6 +3,7 @@
 namespace Scrapy\Builders;
 
 use Scrapy\Parsers\FunctionParser;
+use Scrapy\Reader\Reader;
 use Scrapy\Scrapy;
 use Scrapy\Traits\HandleCallable;
 
@@ -63,6 +64,12 @@ class ScrapyBuilder
         if ($this->isFunction($callback)) {
             $this->scrapy->setAfterScrapeCallback($callback);
         }
+        return $this;
+    }
+
+    public function reader(Reader $reader): ScrapyBuilder
+    {
+        $this->scrapy->setReader($reader);
         return $this;
     }
 

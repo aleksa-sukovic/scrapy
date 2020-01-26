@@ -19,6 +19,7 @@ class Scrapy
 
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
+    protected $html;
     protected $parsers;
     protected $params;
     protected $errors;
@@ -28,6 +29,7 @@ class Scrapy
         $this->parsers = [];
         $this->errors = [];
         $this->params = [];
+        $this->html = '';
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
@@ -35,9 +37,9 @@ class Scrapy
 
     public function scrape(string $url)
     {
-        $html = $this->reader->read($url);
-        $html = $this->beforeScrape($html);
-        $crawler = new Crawly($html);
+        $this->html = $this->reader->read($url);
+        $this->html = $this->beforeScrape($this->html);
+        $crawler = new Crawly($this->html);
         $result = [];
 
         foreach ($this->parsers as $parser) {
@@ -116,5 +118,20 @@ class Scrapy
     public function errors(): array
     {
         return $this->errors;
+    }
+
+    public function reader(): Reader
+    {
+        return $this->reader;
+    }
+
+    public function setReader(Reader $reader): void
+    {
+        $this->reader = $reader;
+    }
+
+    public function html(): string
+    {
+        return $this->html;
     }
 }
