@@ -3,11 +3,10 @@
 namespace Scrapy;
 
 use Exception;
-use Scrapy\Exceptions\ScrapeException;
+use Scrapy\Crawlers\Crawly;
 use Scrapy\Parsers\IParser;
 use Scrapy\Reader\Reader;
 use Scrapy\Traits\HandleCallable;
-use Symfony\Component\DomCrawler\Crawler;
 
 class Scrapy
 {
@@ -34,33 +33,34 @@ class Scrapy
         $this->afterScrapeCallback = null;
     }
 
-    /**
-     * @param string $url
-     *
-     * @return array
-     * @throws ScrapeException
-     */
     public function scrape(string $url)
     {
         $html = $this->reader->read($url);
+        $html = $this->beforeScrape($html);
+        $crawler = new Crawly($html);
         $result = [];
-
-        $crawler = new Crawler($html);
-        $crawler = $this->isFunction($this->beforeScrapeCallback) ?
-            $this->callFunction($this->beforeScrapeCallback, $crawler) : $crawler;
 
         foreach ($this->parsers as $parser) {
             try {
                 $parser->process($crawler, $result, $this->params);
             } catch (Exception $e) {
-                $this->errors[] = ['parser' => $parser, 'message' => $e->getMessage(), 'code' => $e->getCode()];
+                $this->errors[] = ['parser' => get_class($parser), 'message' => $e->getMessage(), 'code' => $e->getCode()];
             }
         }
 
-        $result = $this->isFunction($this->afterScrapeCallback) ?
-            $this->callFunction($this->afterScrapeCallback, $result) : $result;
+        return $this->afterScrape($result);
+    }
 
-        return $result;
+    protected function beforeScrape(string $html): string
+    {
+        return $this->isFunction($this->beforeScrapeCallback) ?
+            $this->callFunction($this->beforeScrapeCallback, $html) : $html;
+    }
+
+    protected function afterScrape(&$scrapingResult): array
+    {
+        return $this->isFunction($this->afterScrapeCallback) ?
+            $this->callFunction($this->afterScrapeCallback, $scrapingResult) : $scrapingResult;
     }
 
     public function setParsers(array $parsers): void
