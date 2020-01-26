@@ -2,6 +2,8 @@
 
 namespace Scrapy\Builders;
 
+use Scrapy\Exceptions\InvalidParser;
+use Scrapy\Parsers\IParser;
 use Scrapy\Scrapy;
 
 class ScrapyBuilder
@@ -24,6 +26,24 @@ class ScrapyBuilder
     public function withParams(array $params): ScrapyBuilder
     {
         $this->scrapy->setParams($params);
+        return $this;
+    }
+
+    public function withParser($parser): ScrapyBuilder
+    {
+        if (is_string($parser)) $parser = new $parser;
+
+        $this->scrapy->addParser($parser);
+
+        return $this;
+    }
+
+    public function withParsers(array $parsers): ScrapyBuilder
+    {
+        foreach ($parsers as $parser) {
+            $this->withParser($parser);
+        }
+
         return $this;
     }
 

@@ -25,4 +25,32 @@ class ScrapyBuilderTest extends TestCase
 
         $this->assertEquals([], $scrapy->params());
     }
+
+    public function test_adding_parser_by_class_name()
+    {
+        $scrapy = ScrapyBuilder::make()
+            ->withParser(TestParser::class)
+            ->build();
+
+        $this->assertIsObject($scrapy->parsers()[0]);
+        $this->assertEquals(TestParser::class, get_class($scrapy->parsers()[0]));
+    }
+
+    public function test_adding_parser_object()
+    {
+        $scrapy = ScrapyBuilder::make()
+            ->withParser(new TestParser())
+            ->build();
+
+        $this->assertIsObject($scrapy->parsers()[0]);
+    }
+
+    public function test_adding_multiple_parsers()
+    {
+        $scrapy = ScrapyBuilder::make()
+            ->withParsers([TestParser::class, TestParser::class])
+            ->build();
+
+        $this->assertEquals(2, count($scrapy->parsers()));
+    }
 }

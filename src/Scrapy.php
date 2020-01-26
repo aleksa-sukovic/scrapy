@@ -4,6 +4,7 @@ namespace Scrapy;
 
 use Exception;
 use Scrapy\Exceptions\ScrapeException;
+use Scrapy\Parsers\IParser;
 use Scrapy\Reader\Reader;
 use Scrapy\Traits\HandleCallable;
 use Symfony\Component\DomCrawler\Crawler;
@@ -69,7 +70,7 @@ class Scrapy
 
         foreach ($this->parsers as $parser) {
             try {
-                app($parser)->process($crawler, $result, $this->params);
+                $parser->process($crawler, $result, $this->params);
             } catch (Exception $e) {
                 $this->errors[] = ['parser' => $parser, 'message' => $e->getMessage(), 'code' => $e->getCode()];
             }
@@ -109,19 +110,15 @@ class Scrapy
         return $this;
     }
 
-    /**
-     * @param string[] $parsers
-     *     - Array of parser's class names.
-     *
-     * @return Scrapy
-     */
-    public function withParsers(array $parsers): Scrapy
+    public function setParsers(array $parsers): void
     {
         $this->parsers = $parsers;
-
-        return $this;
     }
 
+    public function addParser(IParser $parser): void
+    {
+        $this->parsers[] = $parser;
+    }
 
     public function errors(): array
     {
@@ -133,16 +130,16 @@ class Scrapy
         return $this->params;
     }
 
+    public function parsers(): array
+    {
+        return $this->parsers;
+    }
+
     public function setParams(array $params): Scrapy
     {
         $this->params = $params;
 
         return $this;
-    }
-
-    public function reader(): Reader
-    {
-        return $this->reader;
     }
 
     public function hasErrors(): bool
