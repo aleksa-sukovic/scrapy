@@ -135,7 +135,7 @@ class Crawly
         } else if ($this->isHtml($html)) {
             return new Crawler($html);
         } else {
-            return (new Crawler("<div>$html</div>"))->filter('div')->first();
+            return (new Crawler("<body>$html</body>"))->filter('body')->first();
         }
     }
 
