@@ -119,6 +119,15 @@ class Crawly
 		}
 	}
 
+	public function html($default = ''): string
+    {
+        try {
+            return $this->activeCrawler->html($default);
+        } catch (Exception|Error $e) {
+            return $default;
+        }
+    }
+
     protected function makeCrawler(string $html): Crawler
     {
         if (empty($html)) {
