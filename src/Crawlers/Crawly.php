@@ -4,6 +4,7 @@ namespace Scrapy\Crawlers;
 
 use Error;
 use Exception;
+use Scrapy\Exceptions\CrawlyException;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Crawly
@@ -128,12 +129,18 @@ class Crawly
         }
     }
 
-    public function exists(): bool
+    public function exists($throw = false): bool
     {
+        $exists = false;
+
         try {
-            return $this->activeCrawler->text();
+            $exists = $this->activeCrawler->text();
         } catch (Exception|Error $e) {
-            return false;
+            $exists = false;
+        } finally {
+            if (!$exists && $throw) throw new CrawlyException();
+
+            return $exists;
         }
     }
 
