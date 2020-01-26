@@ -123,7 +123,7 @@ class Crawly
 	public function html($default = ''): string
     {
         try {
-            return $this->activeCrawler->html($default);
+            return $this->activeCrawler->outerHtml();
         } catch (Exception|Error $e) {
             return $default;
         }

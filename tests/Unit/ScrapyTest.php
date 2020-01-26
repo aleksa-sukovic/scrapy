@@ -64,7 +64,7 @@ class ScrapyTest extends TestCase
         $scrapy = $this->builder->beforeScrape(function (string $html) {
             $crawly = new Crawly($html);
 
-            return $crawly->filter('div')->html();
+            return $crawly->filter('span')->html();
         })->build();
 
         $scrapy->scrape('https://www.some-url.com');

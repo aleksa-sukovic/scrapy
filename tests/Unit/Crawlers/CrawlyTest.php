@@ -124,7 +124,7 @@ class CrawlyTest extends TestCase
     public function test_html_method()
     {
         $crawly = new Crawly('<div><span>Hello!</span></div>');
-        $html = $crawly->filter('div')->html();
+        $html = $crawly->filter('span')->html();
 
         $this->assertEquals('<span>Hello!</span>', $html);
     }
