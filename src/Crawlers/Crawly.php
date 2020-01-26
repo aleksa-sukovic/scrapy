@@ -83,7 +83,7 @@ class Crawly
 
 		try {
 			foreach ($this->activeCrawler as $node) $count++;
-		} catch (Exception $e) {
+		} catch (Exception|Error $e) {
 			//
 		} finally {
 			return $count;

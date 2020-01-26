@@ -6,6 +6,7 @@ use Mockery;
 use PHPUnit\Framework\TestCase;
 use Scrapy\Builders\ScrapyBuilder;
 use Scrapy\Crawlers\Crawly;
+use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\IParser;
 use Scrapy\Reader\Reader;
 
@@ -97,5 +98,18 @@ class ScrapyTest extends TestCase
 
         $result = $scrapy->scrape('https://www.some-url.com');
         $this->assertEquals($result['foo'], 'bar');
+    }
+
+    public function test_error_handling_method()
+    {
+        $this->readerMock->shouldReceive('read')->andReturn('');
+        $parser1 = new class implements IParser {
+            public function process(Crawly $crawler, &$output, $params) { throw new ScrapeException('Random exception.'); }
+        };
+        $scrapy = $this->builder->withParser($parser1)->build();
+
+        $scrapy->scrape('https://www.some-url.com');
+        $this->assertTrue($scrapy->failed());
+        $this->assertEquals(1, count($scrapy->errors()));
     }
 }

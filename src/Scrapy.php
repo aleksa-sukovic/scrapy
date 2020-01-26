@@ -65,11 +65,6 @@ class Scrapy
             $this->callFunction($this->afterScrapeCallback, $scrapingResult) : $scrapingResult;
     }
 
-    public function setParsers(array $parsers): void
-    {
-        $this->parsers = $parsers;
-    }
-
     public function addParser(IParser $parser): void
     {
         $this->parsers[] = $parser;
@@ -110,7 +105,7 @@ class Scrapy
         return $this->afterScrapeCallback;
     }
 
-    public function hasErrors(): bool
+    public function failed(): bool
     {
         return count($this->errors) > 0;
     }
