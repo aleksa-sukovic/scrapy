@@ -48,11 +48,7 @@ class Scrapy
         if (!$this->passes($this->html)) {
             $this->errors[] = ['object' => null, 'message' => 'Page validation failed.', 'status_code' => 400];
 
-            if ($this->isFunction($this->onFailCallback)) {
-                return $this->callFunction($this->onFailCallback, []);
-            } else {
-                return [];
-            }
+            return $this->callFunction($this->onFailCallback, []) ?? [];
         }
 
         $this->html = $this->beforeScrape($this->html);
@@ -70,31 +66,25 @@ class Scrapy
 
         $result = $this->afterScrape($result);
 
-        if ($this->failed() && $this->isFunction($this->onFailCallback)) {
-            $handled = $this->callFunction($this->onFailCallback, $result);
-            $result = $handled ? $handled : $result;
-        }
+        if ($this->failed())
+            $result = $this->callFunction($this->onFailCallback, $result) ?? $result;
 
         return $result;
     }
 
     protected function beforeScrape(string $html): string
     {
-        return $this->isFunction($this->beforeScrapeCallback) ?
-            $this->callFunction($this->beforeScrapeCallback, $html) : $html;
+        return $this->callFunction($this->beforeScrapeCallback, $html) ?? $html;
     }
 
     protected function afterScrape(&$scrapingResult): array
     {
-        return $this->isFunction($this->afterScrapeCallback) ?
-            $this->callFunction($this->afterScrapeCallback, $scrapingResult) : $scrapingResult;
+        return $this->callFunction($this->afterScrapeCallback, $scrapingResult) ?? $scrapingResult;
     }
 
     protected function handleParserError(IParser $parser, Exception $e): void
     {
-        if ($this->isFunction($this->onParseErrorCallback)) {
-            $this->callFunction($this->onParseErrorCallback, $parser);
-        }
+        $this->callFunction($this->onParseErrorCallback, $parser);
 
         $this->errors[] = ['object' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
     }
