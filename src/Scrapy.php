@@ -20,6 +20,7 @@ class Scrapy
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
     protected $onParseErrorCallback;
+    protected $validityChecker;
     protected $html;
     protected $parsers;
     protected $errors;
@@ -34,6 +35,8 @@ class Scrapy
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
+        $this->onParseErrorCallback = null;
+        $this->validityChecker = null;
     }
 
     public function scrape(string $url)
@@ -133,6 +136,16 @@ class Scrapy
     public function setReader(Reader $reader): void
     {
         $this->reader = $reader;
+    }
+
+    public function setValidityCheck($callback): void
+    {
+        $this->validityChecker = $callback;
+    }
+
+    public function validityChecker(): callable
+    {
+        return $this->validityChecker;
     }
 
     public function html(): string

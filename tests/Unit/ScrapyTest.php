@@ -128,4 +128,21 @@ class ScrapyTest extends TestCase
            ->build()
            ->scrape('https://www.some-url.com');
     }
+
+    public function test_validity_checker_triggers_callback()
+    {
+        $scrapy = $this->builder
+            ->withParsers([])
+            ->valid(function (Crawly $crawler): bool {
+                return false;
+            })
+            ->onFail(function (&$output) {
+                $output['foo'] = 'bar';
+            })
+            ->build();
+
+        $result = $scrapy->scrape('https://www.some-url.com');
+        $this->assertTrue($scrapy->failed());
+        $this->assertEquals('bar', $result['foo']);
+    }
 }

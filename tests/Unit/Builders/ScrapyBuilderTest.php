@@ -100,4 +100,15 @@ class ScrapyBuilderTest extends TestCase
         $this->assertEquals(1, count($scrapy->parsers()));
         $this->assertInstanceOf(FunctionParser::class, $scrapy->parsers()[0]);
     }
+
+    public function test_validity_checker_callback_is_set()
+    {
+        $checker = function () { return 'Called!'; };
+        $scrapy = ScrapyBuilder::make()
+            ->valid($checker)
+            ->build();
+
+        $this->assertIsCallable($scrapy->validityChecker());
+        $this->assertEquals('Called!', $scrapy->validityChecker()());
+    }
 }

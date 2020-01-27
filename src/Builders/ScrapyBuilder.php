@@ -81,6 +81,12 @@ class ScrapyBuilder
         return $this;
     }
 
+    public function valid($callback): ScrapyBuilder
+    {
+        $this->scrapy->setValidityCheck($callback);
+        return $this;
+    }
+
     public function reset(): ScrapyBuilder
     {
         $this->scrapy = new Scrapy();
