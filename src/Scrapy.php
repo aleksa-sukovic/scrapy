@@ -7,7 +7,8 @@ use Exception;
 use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\Parser;
-use Scrapy\Reader\Reader;
+use Scrapy\Reader\IReader;
+use Scrapy\Reader\NullReader;
 use Scrapy\Traits\HandleCallable;
 
 class Scrapy
@@ -15,34 +16,28 @@ class Scrapy
     use HandleCallable;
 
     protected $reader;
-    protected $beforeScrapeCallback;
     protected $htmlCheckerFunction;
     protected $html;
     protected $parsers;
     protected $params;
-    protected $result;
 
     public function __construct()
     {
         $this->parsers = [];
         $this->params = [];
         $this->errors = [];
-        $this->result = [];
         $this->html = '';
-        $this->reader = new Reader();
-        $this->beforeScrapeCallback = null;
+        $this->reader = new NullReader();
         $this->htmlCheckerFunction = null;
     }
 
-    public function scrape(string $url)
+    public function scrape(): array
     {
         try {
-            $this->html = $this->reader->read($url);
+            $this->html = $this->reader()->read();
             $this->runValidityChecker($this->html);
 
-            $this->html = $this->beforeScrape($this->html);
-            $this->result = $this->runParsers(new Crawly($this->html));
-            return $this->result;
+            return $this->runParsers(new Crawly($this->html));
         } catch (Exception|Error $e) {
             throw new ScrapeException($e->getMessage(), $e->getCode());
         }
@@ -68,11 +63,6 @@ class Scrapy
             $result = $parser->process($crawly, $result, $this->params);
         }
         return $result;
-    }
-
-    protected function beforeScrape(string $html): string
-    {
-        return $this->callFunction($this->beforeScrapeCallback, $html) ?? $html;
     }
 
     public function addParser(Parser $parser): void
@@ -101,22 +91,12 @@ class Scrapy
         }
     }
 
-    public function setBeforeScrapeCallback($callback): void
-    {
-        $this->beforeScrapeCallback = $callback;
-    }
-
-    public function beforeScrapeCallback(): ?callable
-    {
-        return $this->beforeScrapeCallback;
-    }
-
-    public function reader(): Reader
+    public function reader(): IReader
     {
         return $this->reader;
     }
 
-    public function setReader(Reader $reader): void
+    public function setReader(IReader $reader): void
     {
         $this->reader = $reader;
     }
@@ -134,10 +114,5 @@ class Scrapy
     public function html(): string
     {
         return $this->html;
-    }
-
-    public function result(): array
-    {
-        return $this->result;
     }
 }

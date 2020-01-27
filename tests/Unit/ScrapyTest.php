@@ -2,19 +2,18 @@
 
 namespace Scrapy\Tests\Unit;
 
-use Exception;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use Scrapy\Builders\ScrapyBuilder;
 use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\Parser;
-use Scrapy\Reader\Reader;
+use Scrapy\Reader\UrlReader;
 
 class ScrapyTest extends TestCase
 {
     /**
-     * @var Reader
+     * @var UrlReader
      */
     protected $readerMock;
     protected $builder;
@@ -23,7 +22,7 @@ class ScrapyTest extends TestCase
     {
         parent::setUp();
 
-        $this->readerMock = Mockery::mock(Reader::class);
+        $this->readerMock = Mockery::mock(UrlReader::class);
         $this->builder = ScrapyBuilder::make()->reader($this->readerMock);
     }
 
@@ -41,7 +40,7 @@ class ScrapyTest extends TestCase
         };
         $scrapy = $this->builder->parser($parser)->build();
 
-        $result = $scrapy->scrape('https://some-url.com');
+        $result = $scrapy->scrape();
         $this->assertEquals('Hello World!', $result['heading']);
     }
 
@@ -56,7 +55,7 @@ class ScrapyTest extends TestCase
             public function process(Crawly $crawler, array $output): array { $output['second'] = 'World'; return $output; }
         };
 
-        $result = $this->builder->parsers([$parser1, $parser2])->build()->scrape('https://www.some-url.com');
+        $result = $this->builder->parsers([$parser1, $parser2])->build()->scrape();
         $this->assertEquals('Hello', $result['first']);
         $this->assertEquals('World', $result['second']);
     }
@@ -71,7 +70,7 @@ class ScrapyTest extends TestCase
                 return $output;
             })
             ->build()
-            ->scrape('https://www.some-url.com');
+            ->scrape();
 
         $this->assertEquals('bar', $result['foo']);
     }
@@ -87,22 +86,9 @@ class ScrapyTest extends TestCase
                 return $output;
            })
            ->build();
-        $result = $scraper->scrape('https://www.some-url.com');
+        $result = $scraper->scrape();
 
         $this->assertEquals('bar', $result['foo']);
-    }
-
-    public function test_before_scrape_callback_modifies_input_html()
-    {
-        $this->readerMock->shouldReceive('read')->andReturn('<div><span>Hello World!</span></div>');
-        $scrapy = $this->builder->beforeScrape(function (string $html) {
-            $crawly = new Crawly($html);
-
-            return $crawly->filter('span')->html();
-        })->build();
-
-        $scrapy->scrape('https://www.some-url.com');
-        $this->assertEquals('<span>Hello World!</span>', $scrapy->html());
     }
 
     public function test_params_are_passed_to_each_parser()
@@ -119,25 +105,8 @@ class ScrapyTest extends TestCase
         $scrapy = $this->builder->parser($parser1)
             ->params(['foo' => 'bar'])->build();
 
-        $result = $scrapy->scrape('https://www.some-url.com');
+        $result = $scrapy->scrape();
         $this->assertEquals($result['foo'], 'bar');
-    }
-
-    public function test_result_method_returns_value()
-    {
-        $this->readerMock->shouldReceive('read')->once()->andReturn('<div>Hello!</div>');
-        $parser = new class extends Parser{
-            public function process(Crawly $crawler, array $output): array
-            {
-                $output['world'] = $crawler->string();
-
-                return $output;
-            }
-        };
-        $scrapy = $this->builder->parser($parser)->build();
-
-        $scrapy->scrape('https://www.some-url.com');
-        $this->assertEquals('Hello!', $scrapy->result()['world']);
     }
 
     public function test_scraping_throws_exception_from_reader()
@@ -146,7 +115,7 @@ class ScrapyTest extends TestCase
 
         $this->expectException(ScrapeException::class);
 
-        $this->builder->build()->scrape('https://www.some-url.com');
+        $this->builder->build()->scrape();
     }
 
     public function test_scraping_throws_exception_from_parsers()
@@ -161,7 +130,7 @@ class ScrapyTest extends TestCase
 
         $this->expectException(ScrapeException::class);
 
-        $this->builder->parser($parser)->build()->scrape('https://www.some-url.com');
+        $this->builder->parser($parser)->build()->scrape();
     }
 
     public function test_html_checker_terminates_scraping()
@@ -173,7 +142,7 @@ class ScrapyTest extends TestCase
 
         $this->expectException(ScrapeException::class);
 
-        $scrapy->scrape('https://www.some-url.com');
+        $scrapy->scrape();
     }
 
     public function test_parsers_get_appropriate_crawler()
@@ -194,9 +163,16 @@ class ScrapyTest extends TestCase
             }
         };
 
-        $result = $this->builder->parsers([$parser1, $parser2])->build()->scrape('https://www.some-url.com');
+        $result = $this->builder->parsers([$parser1, $parser2])->build()->scrape();
 
         $this->assertEquals('Hello', $result['first']);
         $this->assertEquals('World', $result['second']);
+    }
+
+    public function test_scrapy_without_specifying_url()
+    {
+        $scrapy = ScrapyBuilder::make()->build();
+
+        $this->assertEmpty($scrapy->reader()->read());
     }
 }

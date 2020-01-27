@@ -57,17 +57,6 @@ class ScrapyBuilderTest extends TestCase
         $this->assertEquals(2, count($scrapy->parsers()));
     }
 
-    public function test_before_scrape_callback_is_set()
-    {
-        $callback = function () { return 'Called!'; };
-        $scrapy = ScrapyBuilder::make()
-            ->beforeScrape($callback)
-            ->build();
-
-        $this->assertIsCallable($scrapy->beforeScrapeCallback());
-        $this->assertEquals('Called!', $scrapy->beforeScrapeCallback()());
-    }
-
     public function test_adding_parser_as_a_function()
     {
         $scrapy = ScrapyBuilder::make()

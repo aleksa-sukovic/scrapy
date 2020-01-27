@@ -3,7 +3,8 @@
 namespace Scrapy\Builders;
 
 use Scrapy\Parsers\FunctionParser;
-use Scrapy\Reader\Reader;
+use Scrapy\Reader\IReader;
+use Scrapy\Reader\UrlReader;
 use Scrapy\Scrapy;
 use Scrapy\Traits\HandleCallable;
 
@@ -32,6 +33,12 @@ class ScrapyBuilder
         return $this;
     }
 
+    public function url(string $url): ScrapyBuilder
+    {
+        $this->scrapy->setReader(new UrlReader($url));
+        return $this;
+    }
+
     public function parser($parser): ScrapyBuilder
     {
         if (is_string($parser))   $parser = new $parser;
@@ -50,23 +57,7 @@ class ScrapyBuilder
         return $this;
     }
 
-    public function beforeScrape($callback): ScrapyBuilder
-    {
-        if ($this->isFunction($callback)) {
-            $this->scrapy->setBeforeScrapeCallback($callback);
-        }
-        return $this;
-    }
-
-    public function afterScrape($callback): ScrapyBuilder
-    {
-        if ($this->isFunction($callback)) {
-            $this->scrapy->setAfterScrapeCallback($callback);
-        }
-        return $this;
-    }
-
-    public function reader(Reader $reader): ScrapyBuilder
+    public function reader(IReader $reader): ScrapyBuilder
     {
         $this->scrapy->setReader($reader);
         return $this;
