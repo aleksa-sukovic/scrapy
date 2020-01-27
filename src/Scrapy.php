@@ -16,7 +16,6 @@ class Scrapy
 
     protected $reader;
     protected $beforeScrapeCallback;
-    protected $afterScrapeCallback;
     protected $htmlCheckerFunction;
     protected $html;
     protected $parsers;
@@ -32,7 +31,6 @@ class Scrapy
         $this->html = '';
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
-        $this->afterScrapeCallback = null;
         $this->htmlCheckerFunction = null;
     }
 
@@ -44,7 +42,6 @@ class Scrapy
 
             $this->html = $this->beforeScrape($this->html);
             $this->result = $this->runParsers(new Crawly($this->html));
-            $this->result = $this->afterScrape($this->result);
             return $this->result;
         } catch (Exception|Error $e) {
             throw new ScrapeException($e->getMessage(), $e->getCode());
@@ -74,11 +71,6 @@ class Scrapy
     protected function beforeScrape(string $html): string
     {
         return $this->callFunction($this->beforeScrapeCallback, $html) ?? $html;
-    }
-
-    protected function afterScrape(&$scrapingResult): array
-    {
-        return $this->callFunction($this->afterScrapeCallback, $scrapingResult) ?? $scrapingResult;
     }
 
     public function addParser(Parser $parser): void
@@ -115,16 +107,6 @@ class Scrapy
     public function beforeScrapeCallback(): ?callable
     {
         return $this->beforeScrapeCallback;
-    }
-
-    public function setAfterScrapeCallback($callback): void
-    {
-        $this->afterScrapeCallback = $callback;
-    }
-
-    public function afterScrapeCallback(): ?callable
-    {
-        return $this->afterScrapeCallback;
     }
 
     public function reader(): Reader

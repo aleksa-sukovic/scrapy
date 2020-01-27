@@ -105,23 +105,6 @@ class ScrapyTest extends TestCase
         $this->assertEquals('<span>Hello World!</span>', $scrapy->html());
     }
 
-    public function test_after_scrape_callback_modifies_result()
-    {
-        $this->readerMock->shouldReceive('read')->andReturn('<div>Hello World!</div>');
-        $scrapy = $this->builder->parser(function (Crawly $crawly, $output) {
-            $output['content'] = 'Hello World!';
-
-            return $output;
-        })->afterScrape(function ($result) {
-            $result['content'] = 'Hello World Changed!';
-
-            return $result;
-        })->build();
-
-        $result = $scrapy->scrape('https://www.some-url.com');
-        $this->assertEquals('Hello World Changed!', $result['content']);
-    }
-
     public function test_params_are_passed_to_each_parser()
     {
         $this->readerMock->shouldReceive('read')->andReturn('');
