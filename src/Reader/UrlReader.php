@@ -36,4 +36,9 @@ class UrlReader implements IReader
 			throw new ScrapeException("Url '$this->url' could not be read.", $this);
 		}
 	}
+
+	public function setClient(Client $client): void
+    {
+        $this->guzzleClient = $client;
+    }
 }

@@ -25,7 +25,6 @@ class Scrapy
     {
         $this->parsers = [];
         $this->params = [];
-        $this->errors = [];
         $this->html = '';
         $this->reader = new NullReader();
         $this->htmlCheckerFunction = null;
