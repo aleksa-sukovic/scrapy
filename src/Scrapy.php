@@ -4,6 +4,7 @@ namespace Scrapy;
 
 use Exception;
 use Scrapy\Crawlers\Crawly;
+use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\IParser;
 use Scrapy\Reader\Reader;
 use Scrapy\Traits\HandleCallable;
@@ -11,7 +12,6 @@ use Scrapy\Traits\HandleCallable;
 class Scrapy
 {
     use HandleCallable;
-
 
     protected $reader;
     protected $beforeScrapeCallback;
@@ -46,7 +46,7 @@ class Scrapy
             $this->errors = [];
             $this->result = [];
 
-            $this->html = $this->read($url);
+            $this->html = $this->reader->read($url);
             $this->runValidityChecker($this->html);
             $this->html = $this->beforeScrape($this->html);
             $crawler = new Crawly($this->html);
@@ -63,21 +63,14 @@ class Scrapy
 
             if ($this->failed())
                 $this->result = $this->callFunction($this->onFailCallback, $this->result) ?? $this->result;
+        } catch (ScrapeException $e) {
+            $this->errors[] = $e->toArray();
         } catch (Exception $e) {
-            //
+            $e = new ScrapeException($e->getMessage(), $e->getCode());
+
+            $this->errors[] = $e->toArray();
         } finally {
             return $this->result;
-        }
-    }
-
-    private function read(string  $url): string
-    {
-        try {
-            return $this->reader->read($url);
-        } catch (Exception $e) {
-            $this->errors[] = ['object' => $this->reader, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
-
-            throw $e;
         }
     }
 
