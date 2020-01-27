@@ -40,6 +40,7 @@ class Scrapy
     {
         $this->html = $this->reader->read($url);
         $this->html = $this->beforeScrape($this->html);
+        $this->errors = [];
         $crawler = new Crawly($this->html);
         $result = [];
 
