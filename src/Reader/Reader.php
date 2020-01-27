@@ -35,7 +35,7 @@ class Reader
 
 			return (string) $response->getBody();
 		} catch (ClientException|ServerException $e) {
-			throw new ScrapeException("Url '$url' could not be read.");
+			throw new ScrapeException("Url '$url' could not be read.", $this);
 		}
 	}
 }
