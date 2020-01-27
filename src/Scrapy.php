@@ -22,15 +22,15 @@ class Scrapy
     protected $onParseErrorCallback;
     protected $html;
     protected $parsers;
+    protected $errors;
     protected $params;
-    protected $failed;
 
     public function __construct()
     {
         $this->parsers = [];
         $this->params = [];
+        $this->errors = [];
         $this->html = '';
-        $this->failed = false;
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
@@ -47,7 +47,7 @@ class Scrapy
             try {
                 $parser->process($crawler, $result, $this->params);
             } catch (Exception $e) {
-                $this->handleParserError($parser);
+                $this->handleParserError($parser, $e);
             }
         }
 
@@ -66,12 +66,12 @@ class Scrapy
             $this->callFunction($this->afterScrapeCallback, $scrapingResult) : $scrapingResult;
     }
 
-    protected function handleParserError(IParser $parser): void
+    protected function handleParserError(IParser $parser, Exception $e): void
     {
         if ($this->isFunction($this->onParseErrorCallback)) {
             $this->callFunction($this->onParseErrorCallback, $parser);
         }
-        $this->failed = true;
+        $this->errors[] = ['parser' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
     }
 
     public function addParser(IParser $parser): void
@@ -116,7 +116,12 @@ class Scrapy
 
     public function failed(): bool
     {
-        return $this->failed;
+        return count($this->errors) > 0;
+    }
+
+    public function errors(): array
+    {
+        return $this->errors;
     }
 
     public function reader(): Reader

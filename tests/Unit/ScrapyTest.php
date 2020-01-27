@@ -9,6 +9,7 @@ use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\IParser;
 use Scrapy\Reader\Reader;
+use Scrapy\Scrapy;
 
 class ScrapyTest extends TestCase
 {
@@ -110,6 +111,7 @@ class ScrapyTest extends TestCase
 
         $scrapy->scrape('https://www.some-url.com');
         $this->assertTrue($scrapy->failed());
+        $this->assertCount(1, $scrapy->errors());
     }
 
     public function test_parser_error_callback_is_triggered()
