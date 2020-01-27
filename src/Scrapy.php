@@ -44,6 +44,17 @@ class Scrapy
     public function scrape(string $url)
     {
         $this->html = $this->reader->read($url);
+
+        if (!$this->passes($this->html)) {
+            $this->errors[] = ['object' => null, 'message' => 'Page validation failed.', 'status_code' => 400];
+
+            if ($this->isFunction($this->onFailCallback)) {
+                return $this->callFunction($this->onFailCallback, []);
+            } else {
+                return [];
+            }
+        }
+
         $this->html = $this->beforeScrape($this->html);
         $this->errors = [];
         $crawler = new Crawly($this->html);
@@ -57,7 +68,14 @@ class Scrapy
             }
         }
 
-        return $this->afterScrape($result);
+        $result = $this->afterScrape($result);
+
+        if ($this->failed() && $this->isFunction($this->onFailCallback)) {
+            $handled = $this->callFunction($this->onFailCallback, $result);
+            $result = $handled ? $handled : $result;
+        }
+
+        return $result;
     }
 
     protected function beforeScrape(string $html): string
@@ -77,7 +95,17 @@ class Scrapy
         if ($this->isFunction($this->onParseErrorCallback)) {
             $this->callFunction($this->onParseErrorCallback, $parser);
         }
-        $this->errors[] = ['parser' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
+
+        $this->errors[] = ['object' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
+    }
+
+    protected function passes(string $html): bool
+    {
+        if (!$this->isFunction($this->validityChecker)) {
+            return true;
+        }
+
+        return $this->callFunction($this->validityChecker, new Crawly($html));
     }
 
     public function addParser(IParser $parser): void

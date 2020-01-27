@@ -131,13 +131,15 @@ class ScrapyTest extends TestCase
 
     public function test_validity_checker_triggers_callback()
     {
+        $this->readerMock->shouldReceive('read')->once()->andReturn('');
         $scrapy = $this->builder
             ->withParsers([])
             ->valid(function (Crawly $crawler): bool {
                 return false;
             })
-            ->onFail(function (&$output) {
+            ->onFail(function ($output) {
                 $output['foo'] = 'bar';
+                return $output;
             })
             ->build();
 
