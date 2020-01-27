@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
-use Scrapy\Reader\UrlReader;
+use Scrapy\Readers\UrlReader;
 
 class UrlReaderTest extends TestCase
 {

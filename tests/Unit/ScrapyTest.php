@@ -8,7 +8,7 @@ use Scrapy\Builders\ScrapyBuilder;
 use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\Parser;
-use Scrapy\Reader\UrlReader;
+use Scrapy\Readers\UrlReader;
 
 class ScrapyTest extends TestCase
 {

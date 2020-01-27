@@ -76,8 +76,8 @@ class ScrapyBuilderTest extends TestCase
             ->htmlChecker($checker)
             ->build();
 
-        $this->assertIsCallable($scrapy->validityChecker());
-        $this->assertEquals('Called!', $scrapy->validityChecker()());
+        $this->assertIsCallable($scrapy->htmlChecker());
+        $this->assertEquals('Called!', $scrapy->htmlChecker()());
     }
 }
 

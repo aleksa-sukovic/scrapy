@@ -4,28 +4,36 @@ namespace Scrapy\Exceptions;
 
 use Exception;
 
+/**
+ * Class ScrapeException.
+ *
+ * Base Scrapy exception class.
+ *
+ * @package Scrapy\Exceptions
+ */
 class ScrapeException extends Exception
 {
-    protected $object;
-
-	public function __construct($message = "Scraping failed.", $code = 400, $object = null)
+    /**
+     * ScrapeException constructor.
+     *
+     * @param string $message [optional] The Exception message to throw.
+     * @param int $code [optional] The Exception code.
+     */
+	public function __construct($message = "Scraping failed.", $code = 400)
 	{
 		parent::__construct($message, $code, null);
-
-		$this->object = $object;
 	}
 
-	public function getObject()
-    {
-        return $this->object;
-    }
-
+    /**
+     * Transforms exception to array.
+     *
+     * @return array Array representation of this exception.
+     */
     public function toArray(): array
     {
         return [
             'message' => $this->message,
             'code'    => $this->code,
-            'object'  => $this->object,
         ];
     }
 }

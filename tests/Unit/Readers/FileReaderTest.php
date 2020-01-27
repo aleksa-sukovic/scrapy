@@ -4,7 +4,7 @@ namespace Scrapy\Tests\Unit\Readers;
 
 use PHPUnit\Framework\TestCase;
 use Scrapy\Exceptions\ScrapeException;
-use Scrapy\Reader\FileReader;
+use Scrapy\Readers\FileReader;
 
 class FileReaderTest extends TestCase
 {

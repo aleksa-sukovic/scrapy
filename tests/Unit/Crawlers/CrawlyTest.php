@@ -4,7 +4,7 @@ namespace Tests\Unit\Crawly;
 
 use PHPUnit\Framework\TestCase;
 use Scrapy\Crawlers\Crawly;
-use Scrapy\Exceptions\CrawlyException;
+use Scrapy\Exceptions\ScrapeException;
 
 class CrawlyTest extends TestCase
 {
@@ -158,7 +158,7 @@ class CrawlyTest extends TestCase
 
     public function test_exists_method_throws_exception()
     {
-        $this->expectException(CrawlyException::class);
+        $this->expectException(ScrapeException::class);
         $crawly = new Crawly('<div>Hello World!</div>');
 
         $crawly->filter('h1')->filter('span')->exists(true);
