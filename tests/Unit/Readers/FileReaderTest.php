@@ -10,7 +10,7 @@ class FileReaderTest extends TestCase
 {
     protected $filePath = __DIR__ . '/test.txt';
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

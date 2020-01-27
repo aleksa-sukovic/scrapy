@@ -1,7 +1,7 @@
 # Scrapy
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/aleksa-sukovic/scrapy.svg?style=flat-square)](https://packagist.org/packages/aleksa-sukovic/scrapy)
-[![Build Status](https://img.shields.io/travis/aleksa-sukovic/scrapy/master.svg?style=flat-square)](https://travis-ci.org/aleksa-sukovic/scrapy)
+[![Build Status](https://travis-ci.com/aleksa-sukovic/scrapy.svg?token=zCspA5s4zGkRNiq8zzR1&branch=develop)](https://travis-ci.com/aleksa-sukovic/scrapy)
 
 PHP web scraping made easy.
 
