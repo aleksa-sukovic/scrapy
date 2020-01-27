@@ -57,9 +57,7 @@ class Scrapy
         } catch (ScrapeException $e) {
             $this->errors[] = $e->toArray();
         } catch (Exception $e) {
-            $e = new ScrapeException($e->getMessage(), $e->getCode());
-
-            $this->errors[] = $e->toArray();
+            $this->errors[] = (new ScrapeException($e->getMessage(), $e->getCode()))->toArray();
         } finally {
             return $this->result;
         }
