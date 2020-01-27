@@ -16,10 +16,11 @@ class FunctionParser implements IParser
         $this->callback = $callback;
     }
 
-    public function process(Crawly $crawler, &$output, $params)
+    public function process(Crawly $crawler, array $output, array $params): array
     {
         if (is_callable($this->callback)) {
-            call_user_func($this->callback, $crawler, $output, $params);
+            return call_user_func($this->callback, $crawler, $output, $params);
         }
+        return $output;
     }
 }

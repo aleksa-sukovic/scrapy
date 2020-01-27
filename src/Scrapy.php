@@ -78,7 +78,7 @@ class Scrapy
     {
         foreach ($this->parsers as $parser) {
             try {
-                $parser->process($crawly, $this->result, $this->params);
+                $this->result = $parser->process($crawly, $this->result, $this->params);
             } catch (Exception $e) {
                 $this->handleParserError($parser, $e);
             }

@@ -31,9 +31,11 @@ class ScrapyTest extends TestCase
         $this->readerMock->shouldReceive('read')->andReturn('<div><h1>Hello World!</h1></div>');
 
         $parser = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params)
+            public function process(Crawly $crawler, array $output, array $params): array
             {
                 $output['heading'] = $crawler->filter('h1')->first()->string();
+
+                return $output;
             }
         };
         $scrapy = $this->builder->withParser($parser)->build();
@@ -47,15 +49,30 @@ class ScrapyTest extends TestCase
         $this->readerMock->shouldReceive('read')->andReturn('');
 
         $parser1 = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params) { $output['first'] = 'Hello'; }
+            public function process(Crawly $crawler, array $output, array $params): array { $output['first'] = 'Hello'; return $output; }
         };
         $parser2 = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params) { $output['second'] = 'World'; }
+            public function process(Crawly $crawler, array $output, array $params): array { $output['second'] = 'World'; return $output; }
         };
 
         $result = $this->builder->withParsers([$parser1, $parser2])->build()->scrape('https://www.some-url.com');
         $this->assertEquals('Hello', $result['first']);
         $this->assertEquals('World', $result['second']);
+    }
+
+    public function test_scraping_with_function_parser()
+    {
+        $this->readerMock->shouldReceive('read')->andReturn('<div><h1>Hello World!</h1></div>');
+
+        $result = $this->builder->withParser(function (Crawly $crawly, array $output, array $params): array {
+                $output['foo'] = 'bar';
+
+                return $output;
+            })
+            ->build()
+            ->scrape('https://www.some-url.com');
+
+        $this->assertEquals('bar', $result['foo']);
     }
 
     public function test_before_scrape_callback_modifies_input_html()
@@ -90,7 +107,7 @@ class ScrapyTest extends TestCase
     {
         $this->readerMock->shouldReceive('read')->andReturn('');
         $parser1 = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params) { $output['foo'] = $params['foo']; }
+            public function process(Crawly $crawler, array $output, array $params): array { $output['foo'] = $params['foo']; return $output; }
         };
 
         $scrapy = $this->builder->withParser($parser1)
@@ -104,7 +121,7 @@ class ScrapyTest extends TestCase
     {
         $this->readerMock->shouldReceive('read')->andReturn('');
         $parser = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params) { throw new ScrapeException('Random exception.'); }
+            public function process(Crawly $crawler, array $output, array $params): array { throw new ScrapeException('Random exception.'); }
         };
         $scrapy = $this->builder->withParser($parser)->build();
 
@@ -118,7 +135,7 @@ class ScrapyTest extends TestCase
         $that = $this;
         $this->readerMock->shouldReceive('read')->andReturn('');
         $parser = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params) { throw new ScrapeException('Random parsing exception.'); }
+            public function process(Crawly $crawler, array $output, array $params): array { throw new ScrapeException('Random parsing exception.'); }
         };
 
        $this->builder->withParser($parser)
@@ -152,9 +169,10 @@ class ScrapyTest extends TestCase
     {
         $this->readerMock->shouldReceive('read')->once()->andReturn('<div>Hello!</div>');
         $parser = new class implements IParser {
-            public function process(Crawly $crawler, &$output, $params)
+            public function process(Crawly $crawler, array $output, array $params): array
             {
                 $output['world'] = $crawler->string();
+                return $output;
             }
         };
         $scrapy = $this->builder->withParser($parser)->build();

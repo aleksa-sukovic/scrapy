@@ -7,8 +7,8 @@ use Scrapy\Parsers\IParser;
 
 class TestParser implements IParser
 {
-    public function process(Crawly $crawler, &$output, $params)
+    public function process(Crawly $crawler, array $output, array $params): array
     {
-        //
+        return $output;
     }
 }

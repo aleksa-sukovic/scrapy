@@ -12,7 +12,7 @@ trait HandleCallable
 	private function callFunction($function, ...$params)
 	{
 		if (is_callable($function)) {
-			return call_user_func($function, ...$params);
+			return call_user_func_array($function, $params);
 		}
 
 		return null;
