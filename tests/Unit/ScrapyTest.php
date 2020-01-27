@@ -147,4 +147,19 @@ class ScrapyTest extends TestCase
         $this->assertTrue($scrapy->failed());
         $this->assertEquals('bar', $result['foo']);
     }
+
+    public function test_result_method_returns_value()
+    {
+        $this->readerMock->shouldReceive('read')->once()->andReturn('<div>Hello!</div>');
+        $parser = new class implements IParser {
+            public function process(Crawly $crawler, &$output, $params)
+            {
+                $output['world'] = $crawler->string();
+            }
+        };
+        $scrapy = $this->builder->withParser($parser)->build();
+
+        $scrapy->scrape('https://www.some-url.com');
+        $this->assertEquals('Hello!', $scrapy->result()['world']);
+    }
 }

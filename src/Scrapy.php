@@ -12,11 +12,8 @@ class Scrapy
 {
     use HandleCallable;
 
-    /**
-     * @var Reader
-     */
-    protected $reader;
 
+    protected $reader;
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
     protected $onParseErrorCallback;
@@ -26,12 +23,14 @@ class Scrapy
     protected $parsers;
     protected $errors;
     protected $params;
+    protected $result;
 
     public function __construct()
     {
         $this->parsers = [];
         $this->params = [];
         $this->errors = [];
+        $this->result = [];
         $this->html = '';
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
@@ -43,33 +42,54 @@ class Scrapy
 
     public function scrape(string $url)
     {
-        $this->html = $this->reader->read($url);
+        try {
+            $this->errors = [];
+            $this->result = [];
 
-        if (!$this->passes($this->html)) {
-            $this->errors[] = ['object' => null, 'message' => 'Page validation failed.', 'status_code' => 400];
+            $this->html = $this->read($url);
+            $this->runValidityChecker($this->html);
+            $this->html = $this->beforeScrape($this->html);
+            $crawler = new Crawly($this->html);
 
-            return $this->callFunction($this->onFailCallback, []) ?? [];
-        }
-
-        $this->html = $this->beforeScrape($this->html);
-        $this->errors = [];
-        $crawler = new Crawly($this->html);
-        $result = [];
-
-        foreach ($this->parsers as $parser) {
-            try {
-                $parser->process($crawler, $result, $this->params);
-            } catch (Exception $e) {
-                $this->handleParserError($parser, $e);
+            foreach ($this->parsers as $parser) {
+                try {
+                    $parser->process($crawler, $this->result, $this->params);
+                } catch (Exception $e) {
+                    $this->handleParserError($parser, $e);
+                }
             }
+
+            $this->result = $this->afterScrape($this->result);
+
+            if ($this->failed())
+                $this->result = $this->callFunction($this->onFailCallback, $this->result) ?? $this->result;
+        } catch (Exception $e) {
+            //
+        } finally {
+            return $this->result;
+        }
+    }
+
+    private function read(string  $url): string
+    {
+        try {
+            return $this->reader->read($url);
+        } catch (Exception $e) {
+            $this->errors[] = ['object' => $this->reader, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
+
+            throw $e;
+        }
+    }
+
+    private function runValidityChecker(string $html): void
+    {
+        if (!$this->isFunction($this->validityChecker)) {
+            return;
         }
 
-        $result = $this->afterScrape($result);
-
-        if ($this->failed())
-            $result = $this->callFunction($this->onFailCallback, $result) ?? $result;
-
-        return $result;
+        if (!$this->callFunction($this->validityChecker, new Crawly($html))) {
+            $this->errors[] = ['object' => null, 'message' => 'Page html validation failed.', 'status_code' => 400];
+        }
     }
 
     protected function beforeScrape(string $html): string
@@ -87,15 +107,6 @@ class Scrapy
         $this->callFunction($this->onParseErrorCallback, $parser);
 
         $this->errors[] = ['object' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
-    }
-
-    protected function passes(string $html): bool
-    {
-        if (!$this->isFunction($this->validityChecker)) {
-            return true;
-        }
-
-        return $this->callFunction($this->validityChecker, new Crawly($html));
     }
 
     public function addParser(IParser $parser): void
@@ -172,6 +183,12 @@ class Scrapy
     {
         return $this->html;
     }
+
+    public function result(): array
+    {
+        return $this->result;
+    }
+
 
     public function setOnParseErrorCallback($callback): void
     {
