@@ -13,7 +13,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_it_adds_params()
     {
         $scrapy = ScrapyBuilder::make()
-            ->withParams(['foo' => 'bar'])
+            ->params(['foo' => 'bar'])
             ->build();
 
         $this->assertEquals(['foo' => 'bar'], $scrapy->params());
@@ -22,7 +22,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_rested_method_reverts_changes()
     {
         $scrapy = ScrapyBuilder::make()
-            ->withParams(['foo' => 'bar'])
+            ->params(['foo' => 'bar'])
             ->reset()
             ->build();
 
@@ -32,7 +32,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_adding_parser_by_class_name()
     {
         $scrapy = ScrapyBuilder::make()
-            ->withParser(TestParser::class)
+            ->parser(TestParser::class)
             ->build();
 
         $this->assertIsObject($scrapy->parsers()[0]);
@@ -42,7 +42,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_adding_parser_object()
     {
         $scrapy = ScrapyBuilder::make()
-            ->withParser(new TestParser())
+            ->parser(new TestParser())
             ->build();
 
         $this->assertIsObject($scrapy->parsers()[0]);
@@ -51,7 +51,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_adding_multiple_parsers()
     {
         $scrapy = ScrapyBuilder::make()
-            ->withParsers([TestParser::class, TestParser::class])
+            ->parsers([TestParser::class, TestParser::class])
             ->build();
 
         $this->assertEquals(2, count($scrapy->parsers()));
@@ -82,7 +82,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_adding_parser_as_a_function()
     {
         $scrapy = ScrapyBuilder::make()
-            ->withParser(function (Crawly $crawly, &$output, $params) {
+            ->parser(function (Crawly $crawly, &$output, $params) {
                 //
             })
             ->build();
@@ -95,7 +95,7 @@ class ScrapyBuilderTest extends TestCase
     {
         $checker = function () { return 'Called!'; };
         $scrapy = ScrapyBuilder::make()
-            ->valid($checker)
+            ->htmlChecker($checker)
             ->build();
 
         $this->assertIsCallable($scrapy->validityChecker());

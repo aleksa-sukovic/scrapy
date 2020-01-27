@@ -17,7 +17,7 @@ class Scrapy
     protected $reader;
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
-    protected $validityChecker;
+    protected $htmlCheckerFunction;
     protected $html;
     protected $parsers;
     protected $params;
@@ -33,7 +33,7 @@ class Scrapy
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
-        $this->validityChecker = null;
+        $this->htmlCheckerFunction = null;
     }
 
     public function scrape(string $url)
@@ -53,11 +53,11 @@ class Scrapy
 
     private function runValidityChecker(string $html): void
     {
-        if (!$this->isFunction($this->validityChecker)) {
+        if (!$this->isFunction($this->htmlCheckerFunction)) {
             return;
         }
 
-        if (!$this->callFunction($this->validityChecker, new Crawly($html))) {
+        if (!$this->callFunction($this->htmlCheckerFunction, new Crawly($html))) {
             throw new ScrapeException('Page html validation failed.', 400);
         }
     }
@@ -137,14 +137,14 @@ class Scrapy
         $this->reader = $reader;
     }
 
-    public function setValidityCheck($callback): void
+    public function setHtmlChecker($function): void
     {
-        $this->validityChecker = $callback;
+        $this->htmlCheckerFunction = $function;
     }
 
     public function validityChecker(): callable
     {
-        return $this->validityChecker;
+        return $this->htmlCheckerFunction;
     }
 
     public function html(): string

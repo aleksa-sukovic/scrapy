@@ -26,15 +26,15 @@ class ScrapyBuilder
         $this->reset();
     }
 
-    public function withParams(array $params): ScrapyBuilder
+    public function params(array $params): ScrapyBuilder
     {
         $this->scrapy->setParams($params);
         return $this;
     }
 
-    public function withParser($parser): ScrapyBuilder
+    public function parser($parser): ScrapyBuilder
     {
-        if (is_string($parser)) $parser = new $parser;
+        if (is_string($parser))   $parser = new $parser;
         if (is_callable($parser)) $parser = new FunctionParser($parser);
 
         $this->scrapy->addParser($parser);
@@ -42,12 +42,11 @@ class ScrapyBuilder
         return $this;
     }
 
-    public function withParsers(array $parsers): ScrapyBuilder
+    public function parsers(array $parsers): ScrapyBuilder
     {
         foreach ($parsers as $parser) {
-            $this->withParser($parser);
+            $this->parser($parser);
         }
-
         return $this;
     }
 
@@ -73,9 +72,9 @@ class ScrapyBuilder
         return $this;
     }
 
-    public function valid($callback): ScrapyBuilder
+    public function htmlChecker($callback): ScrapyBuilder
     {
-        $this->scrapy->setValidityCheck($callback);
+        $this->scrapy->setHtmlChecker($callback);
         return $this;
     }
 
