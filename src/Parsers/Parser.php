@@ -11,7 +11,7 @@ abstract class Parser implements IParser
         $this->params = $params;
     }
 
-    public function input(string $key)
+    public function param(string $key)
     {
         return $this->has($key) ? $this->params[$key] : null;
     }

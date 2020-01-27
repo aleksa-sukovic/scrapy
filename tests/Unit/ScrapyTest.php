@@ -81,7 +81,7 @@ class ScrapyTest extends TestCase
 
         $scraper = $this->builder->withParams(['foo' => 'bar'])
             ->withParser(function (Crawly $crawly, $output) {
-                $output['foo'] = $this->input('foo');
+                $output['foo'] = $this->param('foo');
 
                 return $output;
            })
@@ -124,7 +124,7 @@ class ScrapyTest extends TestCase
         $this->readerMock->shouldReceive('read')->andReturn('');
         $parser1 = new class extends Parser {
             public function process(Crawly $crawler, array $output): array {
-                $output['foo'] = $this->input('foo');
+                $output['foo'] = $this->param('foo');
 
                 return $output;
             }

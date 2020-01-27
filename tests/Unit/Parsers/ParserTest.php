@@ -12,14 +12,14 @@ class ParserTest extends TestCase
     {
         $parser = new TestParser(['foo' => 'bar']);
 
-        $this->assertEquals('bar', $parser->input('foo'));
+        $this->assertEquals('bar', $parser->param('foo'));
     }
 
     public function test_input_method_returns_null()
     {
         $parser = new TestParser([]);
 
-        $this->assertNull($parser->input('foo'));
+        $this->assertNull($parser->param('foo'));
     }
 
     public function test_has_method_returns_true()

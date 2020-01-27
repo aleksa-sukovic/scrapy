@@ -26,7 +26,7 @@ class FunctionParserTest extends TestCase
     public function test_this_pointer_is_bound_to_callback()
     {
         $callback = function (Crawly $crawly, array $output): array {
-            $output['foo'] = $this->input('foo');
+            $output['foo'] = $this->param('foo');
 
             return $output;
         };
