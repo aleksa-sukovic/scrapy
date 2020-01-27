@@ -20,6 +20,7 @@ class Scrapy
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
     protected $onParseErrorCallback;
+    protected $onFailCallback;
     protected $validityChecker;
     protected $html;
     protected $parsers;
@@ -36,6 +37,7 @@ class Scrapy
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
         $this->onParseErrorCallback = null;
+        $this->onFailCallback = null;
         $this->validityChecker = null;
     }
 
@@ -161,5 +163,15 @@ class Scrapy
     public function onParseErrorCallback(): callable
     {
         return $this->onParseErrorCallback;
+    }
+
+    public function setOnFailCallback($callback): void
+    {
+        $this->onFailCallback = $callback;
+    }
+
+    public function onFailCallback(): callable
+    {
+        return $this->onFailCallback;
     }
 }

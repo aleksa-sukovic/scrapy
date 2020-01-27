@@ -111,4 +111,15 @@ class ScrapyBuilderTest extends TestCase
         $this->assertIsCallable($scrapy->validityChecker());
         $this->assertEquals('Called!', $scrapy->validityChecker()());
     }
+
+    public function test_on_fail_callback_is_set()
+    {
+        $callback = function () { return 'Called!'; };
+        $scrapy = ScrapyBuilder::make()
+            ->onFail($callback)
+            ->build();
+
+        $this->assertIsCallable($scrapy->onFailCallback());
+        $this->assertEquals('Called!', $scrapy->onFailCallback()());
+    }
 }

@@ -87,6 +87,12 @@ class ScrapyBuilder
         return $this;
     }
 
+    public function onFail($callback): ScrapyBuilder
+    {
+        $this->scrapy->setOnFailCallback($callback);
+        return $this;
+    }
+
     public function reset(): ScrapyBuilder
     {
         $this->scrapy = new Scrapy();
