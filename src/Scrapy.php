@@ -6,6 +6,7 @@ use Exception;
 use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\IParser;
+use Scrapy\Parsers\Parser;
 use Scrapy\Reader\Reader;
 use Scrapy\Traits\HandleCallable;
 
@@ -108,8 +109,10 @@ class Scrapy
         $this->errors[] = ['object' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
     }
 
-    public function addParser(IParser $parser): void
+    public function addParser(Parser $parser): void
     {
+        $parser->setParams($this->params);
+
         $this->parsers[] = $parser;
     }
 
@@ -126,6 +129,10 @@ class Scrapy
     public function setParams(array $params): void
     {
         $this->params = $params;
+
+        foreach ($this->parsers as $parser) {
+            $parser->setParams($params);
+        }
     }
 
     public function setBeforeScrapeCallback($callback): void

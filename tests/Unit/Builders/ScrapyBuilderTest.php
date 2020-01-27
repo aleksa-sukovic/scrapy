@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Scrapy\Builders\ScrapyBuilder;
 use Scrapy\Crawlers\Crawly;
 use Scrapy\Parsers\FunctionParser;
+use Scrapy\Parsers\Parser;
 
 class ScrapyBuilderTest extends TestCase
 {
@@ -121,5 +122,13 @@ class ScrapyBuilderTest extends TestCase
 
         $this->assertIsCallable($scrapy->onFailCallback());
         $this->assertEquals('Called!', $scrapy->onFailCallback()());
+    }
+}
+
+class TestParser extends Parser
+{
+    public function process(Crawly $crawler, array $output): array
+    {
+        return $output;
     }
 }

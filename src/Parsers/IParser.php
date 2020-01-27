@@ -6,5 +6,5 @@ use Scrapy\Crawlers\Crawly;
 
 interface IParser
 {
-	public function process(Crawly $crawler, array $output, array $params): array;
+	public function process(Crawly $crawler, array $output): array;
 }
