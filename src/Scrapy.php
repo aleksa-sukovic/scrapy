@@ -2,10 +2,10 @@
 
 namespace Scrapy;
 
+use Error;
 use Exception;
 use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
-use Scrapy\Parsers\IParser;
 use Scrapy\Parsers\Parser;
 use Scrapy\Reader\Reader;
 use Scrapy\Traits\HandleCallable;
@@ -17,12 +17,9 @@ class Scrapy
     protected $reader;
     protected $beforeScrapeCallback;
     protected $afterScrapeCallback;
-    protected $onParseErrorCallback;
-    protected $onFailCallback;
     protected $validityChecker;
     protected $html;
     protected $parsers;
-    protected $errors;
     protected $params;
     protected $result;
 
@@ -36,31 +33,21 @@ class Scrapy
         $this->reader = new Reader();
         $this->beforeScrapeCallback = null;
         $this->afterScrapeCallback = null;
-        $this->onParseErrorCallback = null;
-        $this->onFailCallback = null;
         $this->validityChecker = null;
     }
 
     public function scrape(string $url)
     {
         try {
-            $this->reset();
-
             $this->html = $this->reader->read($url);
             $this->runValidityChecker($this->html);
 
             $this->html = $this->beforeScrape($this->html);
-            $this->runParsers(new Crawly($this->html));
+            $this->result = $this->runParsers(new Crawly($this->html));
             $this->result = $this->afterScrape($this->result);
-        } catch (ScrapeException $e) {
-            $this->errors[] = $e->toArray();
-        } catch (Exception $e) {
-            $this->errors[] = (new ScrapeException($e->getMessage(), $e->getCode()))->toArray();
-        } finally {
-            if ($this->failed())
-                $this->result = $this->callFunction($this->onFailCallback, $this->result) ?? $this->result;
-
             return $this->result;
+        } catch (Exception|Error $e) {
+            throw new ScrapeException($e->getMessage(), $e->getCode());
         }
     }
 
@@ -75,21 +62,13 @@ class Scrapy
         }
     }
 
-    private function runParsers(Crawly $crawly): void
+    private function runParsers(Crawly $crawly): array
     {
+        $result = [];
         foreach ($this->parsers as $parser) {
-            try {
-                $this->result = $parser->process($crawly, $this->result, $this->params);
-            } catch (Exception $e) {
-                $this->handleParserError($parser, $e);
-            }
+            $result = $parser->process($crawly, $result, $this->params);
         }
-    }
-
-    public function reset(): void
-    {
-        $this->errors = [];
-        $this->result = [];
+        return $result;
     }
 
     protected function beforeScrape(string $html): string
@@ -100,13 +79,6 @@ class Scrapy
     protected function afterScrape(&$scrapingResult): array
     {
         return $this->callFunction($this->afterScrapeCallback, $scrapingResult) ?? $scrapingResult;
-    }
-
-    protected function handleParserError(IParser $parser, Exception $e): void
-    {
-        $this->callFunction($this->onParseErrorCallback, $parser);
-
-        $this->errors[] = ['object' => $parser, 'message' => $e->getMessage(), 'status_code' => $e->getCode()];
     }
 
     public function addParser(Parser $parser): void
@@ -155,16 +127,6 @@ class Scrapy
         return $this->afterScrapeCallback;
     }
 
-    public function failed(): bool
-    {
-        return count($this->errors) > 0;
-    }
-
-    public function errors(): array
-    {
-        return $this->errors;
-    }
-
     public function reader(): Reader
     {
         return $this->reader;
@@ -193,25 +155,5 @@ class Scrapy
     public function result(): array
     {
         return $this->result;
-    }
-
-    public function setOnParseErrorCallback($callback): void
-    {
-        $this->onParseErrorCallback = $callback;
-    }
-
-    public function onParseErrorCallback(): callable
-    {
-        return $this->onParseErrorCallback;
-    }
-
-    public function setOnFailCallback($callback): void
-    {
-        $this->onFailCallback = $callback;
-    }
-
-    public function onFailCallback(): callable
-    {
-        return $this->onFailCallback;
     }
 }

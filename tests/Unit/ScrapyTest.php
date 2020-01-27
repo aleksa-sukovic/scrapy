@@ -2,6 +2,7 @@
 
 namespace Scrapy\Tests\Unit;
 
+use Exception;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use Scrapy\Builders\ScrapyBuilder;
@@ -107,8 +108,10 @@ class ScrapyTest extends TestCase
     public function test_after_scrape_callback_modifies_result()
     {
         $this->readerMock->shouldReceive('read')->andReturn('<div>Hello World!</div>');
-        $scrapy = $this->builder->withParser(function (Crawly $crawly, &$output) {
+        $scrapy = $this->builder->withParser(function (Crawly $crawly, $output) {
             $output['content'] = 'Hello World!';
+
+            return $output;
         })->afterScrape(function ($result) {
             $result['content'] = 'Hello World Changed!';
 
@@ -137,54 +140,6 @@ class ScrapyTest extends TestCase
         $this->assertEquals($result['foo'], 'bar');
     }
 
-    public function test_error_handling_method()
-    {
-        $this->readerMock->shouldReceive('read')->andReturn('');
-        $parser = new class extends Parser {
-            public function process(Crawly $crawler, array $output): array { throw new ScrapeException('Random exception.'); }
-        };
-        $scrapy = $this->builder->withParser($parser)->build();
-
-        $scrapy->scrape('https://www.some-url.com');
-        $this->assertTrue($scrapy->failed());
-        $this->assertCount(1, $scrapy->errors());
-    }
-
-    public function test_parser_error_callback_is_triggered()
-    {
-        $that = $this;
-        $this->readerMock->shouldReceive('read')->andReturn('');
-        $parser = new class extends Parser {
-            public function process(Crawly $crawler, array $output): array { throw new ScrapeException('Random parsing exception.'); }
-        };
-
-       $this->builder->withParser($parser)
-            ->onParseError(function (Parser $parser) use ($that) {
-                $that->assertTrue(true);
-            })
-           ->build()
-           ->scrape('https://www.some-url.com');
-    }
-
-    public function test_validity_checker_triggers_callback()
-    {
-        $this->readerMock->shouldReceive('read')->once()->andReturn('');
-        $scrapy = $this->builder
-            ->withParsers([])
-            ->valid(function (Crawly $crawler): bool {
-                return false;
-            })
-            ->onFail(function ($output) {
-                $output['foo'] = 'bar';
-                return $output;
-            })
-            ->build();
-
-        $result = $scrapy->scrape('https://www.some-url.com');
-        $this->assertTrue($scrapy->failed());
-        $this->assertEquals('bar', $result['foo']);
-    }
-
     public function test_result_method_returns_value()
     {
         $this->readerMock->shouldReceive('read')->once()->andReturn('<div>Hello!</div>');
@@ -200,5 +155,29 @@ class ScrapyTest extends TestCase
 
         $scrapy->scrape('https://www.some-url.com');
         $this->assertEquals('Hello!', $scrapy->result()['world']);
+    }
+
+    public function test_scraping_throws_exception_from_reader()
+    {
+        $this->readerMock->shouldReceive('read')->once()->andThrow(ScrapeException::class);
+
+        $this->expectException(ScrapeException::class);
+
+        $this->builder->build()->scrape('https://www.some-url.com');
+    }
+
+    public function test_scraping_throws_exception_from_parsers()
+    {
+        $this->readerMock->shouldReceive('read')->once()->andReturn('');
+        $parser = new class extends Parser {
+            public function process(Crawly $crawler, array $output): array
+            {
+                throw new ScrapeException();
+            }
+        };
+
+        $this->expectException(ScrapeException::class);
+
+        $this->builder->withParser($parser)->build()->scrape('https://www.some-url.com');
     }
 }
