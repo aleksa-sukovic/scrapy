@@ -52,14 +52,14 @@ class Scrapy
             $this->html = $this->beforeScrape($this->html);
             $this->runParsers(new Crawly($this->html));
             $this->result = $this->afterScrape($this->result);
-
-            if ($this->failed())
-                $this->result = $this->callFunction($this->onFailCallback, $this->result) ?? $this->result;
         } catch (ScrapeException $e) {
             $this->errors[] = $e->toArray();
         } catch (Exception $e) {
             $this->errors[] = (new ScrapeException($e->getMessage(), $e->getCode()))->toArray();
         } finally {
+            if ($this->failed())
+                $this->result = $this->callFunction($this->onFailCallback, $this->result) ?? $this->result;
+
             return $this->result;
         }
     }
@@ -71,7 +71,7 @@ class Scrapy
         }
 
         if (!$this->callFunction($this->validityChecker, new Crawly($html))) {
-            $this->errors[] = ['object' => null, 'message' => 'Page html validation failed.', 'status_code' => 400];
+            throw new ScrapeException('Page html validation failed.', 400);
         }
     }
 
