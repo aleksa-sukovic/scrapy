@@ -27,11 +27,17 @@ class Crawly
 	 */
 	protected $trim;
 
+    /**
+     * @var string
+     */
+	protected $html;
+
 	public function __construct($html)
 	{
         $this->crawler = $this->makeCrawler($html);
         $this->activeCrawler = $this->crawler;
 		$this->trim = false;
+		$this->html = $html;
 	}
 
 	public function raw(): Crawler
@@ -144,6 +150,12 @@ class Crawly
         }
     }
 
+    public function reset(): void
+    {
+        $this->crawler = new Crawler($this->html);
+        $this->activeCrawler = $this->crawler;
+    }
+
     protected function makeCrawler(string $html): Crawler
     {
         if (empty($html)) {
@@ -151,7 +163,7 @@ class Crawly
         } else if ($this->isHtml($html)) {
             return new Crawler($html);
         } else {
-            return (new Crawler("<body>$html</body>"))->filter('body')->first();
+            return (new Crawler("<html><body>$html</body></html>"))->filter('body')->first();
         }
     }
 

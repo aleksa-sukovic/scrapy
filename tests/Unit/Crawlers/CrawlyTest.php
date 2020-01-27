@@ -163,4 +163,14 @@ class CrawlyTest extends TestCase
 
         $crawly->filter('h1')->filter('span')->exists(true);
     }
+
+    public function test_reset_method()
+    {
+        $crawly = new Crawly('<div><ul><li>1</li></ul></div>');
+
+        $crawly->filter('li')->first();
+        $crawly->reset();
+
+        $this->assertEquals('<html><body><div><ul><li>1</li></ul></div></body></html>', $crawly->html());
+    }
 }

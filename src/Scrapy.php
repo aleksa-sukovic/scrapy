@@ -63,6 +63,8 @@ class Scrapy
     {
         $result = [];
         foreach ($this->parsers as $parser) {
+            $crawly->reset();
+
             $result = $parser->process($crawly, $result, $this->params);
         }
         return $result;

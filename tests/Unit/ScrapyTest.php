@@ -175,4 +175,28 @@ class ScrapyTest extends TestCase
 
         $scrapy->scrape('https://www.some-url.com');
     }
+
+    public function test_parsers_get_appropriate_crawler()
+    {
+        $this->readerMock->shouldReceive('read')->once()->andReturn('<div><h1>Hello</h1><h2>World</h2><h3>!</h3></div>');
+        $parser1 = new class extends Parser {
+            public function process(Crawly $crawler, array $output): array
+            {
+                $output['first'] = $crawler->filter('h1')->first()->string();
+                return $output;
+            }
+        };
+        $parser2 = new class extends Parser {
+            public function process(Crawly $crawler, array $output): array
+            {
+                $output['second'] = $crawler->filter('h2')->first()->string();
+                return $output;
+            }
+        };
+
+        $result = $this->builder->parsers([$parser1, $parser2])->build()->scrape('https://www.some-url.com');
+
+        $this->assertEquals('Hello', $result['first']);
+        $this->assertEquals('World', $result['second']);
+    }
 }
