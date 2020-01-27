@@ -43,22 +43,13 @@ class Scrapy
     public function scrape(string $url)
     {
         try {
-            $this->errors = [];
-            $this->result = [];
+            $this->reset();
 
             $this->html = $this->reader->read($url);
             $this->runValidityChecker($this->html);
+
             $this->html = $this->beforeScrape($this->html);
-            $crawler = new Crawly($this->html);
-
-            foreach ($this->parsers as $parser) {
-                try {
-                    $parser->process($crawler, $this->result, $this->params);
-                } catch (Exception $e) {
-                    $this->handleParserError($parser, $e);
-                }
-            }
-
+            $this->runParsers(new Crawly($this->html));
             $this->result = $this->afterScrape($this->result);
 
             if ($this->failed())
@@ -83,6 +74,23 @@ class Scrapy
         if (!$this->callFunction($this->validityChecker, new Crawly($html))) {
             $this->errors[] = ['object' => null, 'message' => 'Page html validation failed.', 'status_code' => 400];
         }
+    }
+
+    private function runParsers(Crawly $crawly): void
+    {
+        foreach ($this->parsers as $parser) {
+            try {
+                $parser->process($crawly, $this->result, $this->params);
+            } catch (Exception $e) {
+                $this->handleParserError($parser, $e);
+            }
+        }
+    }
+
+    public function reset(): void
+    {
+        $this->errors = [];
+        $this->result = [];
     }
 
     protected function beforeScrape(string $html): string
@@ -181,7 +189,6 @@ class Scrapy
     {
         return $this->result;
     }
-
 
     public function setOnParseErrorCallback($callback): void
     {
