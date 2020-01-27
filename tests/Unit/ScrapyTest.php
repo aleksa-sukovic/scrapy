@@ -9,7 +9,6 @@ use Scrapy\Crawlers\Crawly;
 use Scrapy\Exceptions\ScrapeException;
 use Scrapy\Parsers\IParser;
 use Scrapy\Reader\Reader;
-use Scrapy\Scrapy;
 
 class ScrapyTest extends TestCase
 {
