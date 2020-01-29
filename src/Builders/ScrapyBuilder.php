@@ -32,8 +32,20 @@ class ScrapyBuilder
         return new ScrapyBuilder();
     }
 
-    /** @var Scrapy */
-    protected $scrapy;
+    /** @var string Url to be used as reading source. */
+    protected $url;
+
+    /** @var array<IParser> Array of parsers. */
+    protected $parsers;
+
+    /** @var callable Function for checking validity of HTML string. */
+    protected $htmlChecker;
+
+    /** @var IReader Reader instance to be used. */
+    protected $reader;
+
+    /** @var array Associative array representing additional parser's parameters. */
+    protected $params;
 
     /**
      * ScrapyBuilder constructor.
@@ -51,7 +63,7 @@ class ScrapyBuilder
      */
     public function params(array $params): ScrapyBuilder
     {
-        $this->scrapy->setParams($params);
+        $this->params = $params;
         return $this;
     }
 
@@ -63,7 +75,7 @@ class ScrapyBuilder
      */
     public function url(string $url): ScrapyBuilder
     {
-        $this->scrapy->setReader(new UrlReader($url));
+        $this->url = $url;
         return $this;
     }
 
@@ -78,7 +90,7 @@ class ScrapyBuilder
         if (is_string($parser))   $parser = new $parser;
         if (is_callable($parser)) $parser = new FunctionParser($parser);
 
-        $this->scrapy->addParser($parser);
+        $this->parsers[] = $parser;
 
         return $this;
     }
@@ -105,7 +117,7 @@ class ScrapyBuilder
      */
     public function reader(IReader $reader): ScrapyBuilder
     {
-        $this->scrapy->setReader($reader);
+        $this->reader = $reader;
         return $this;
     }
 
@@ -121,7 +133,7 @@ class ScrapyBuilder
      */
     public function htmlChecker($callback): ScrapyBuilder
     {
-        $this->scrapy->setHtmlChecker($callback);
+        $this->htmlChecker = $callback;
         return $this;
     }
 
@@ -132,7 +144,11 @@ class ScrapyBuilder
      */
     public function reset(): ScrapyBuilder
     {
-        $this->scrapy = new Scrapy();
+        $this->url = '';
+        $this->parsers = [];
+        $this->htmlChecker = null;
+        $this->reader = null;
+        $this->params = [];
         return $this;
     }
 
@@ -143,6 +159,16 @@ class ScrapyBuilder
      */
     public function build(): Scrapy
     {
-        return $this->scrapy;
+        $scrapy = new Scrapy();
+
+        if ($this->url)
+            $scrapy->setReader(new UrlReader($this->url));
+        if ($this->reader)
+            $scrapy->setReader($this->reader);
+        $scrapy->setParsers($this->parsers);
+        $scrapy->setHtmlChecker($this->htmlChecker);
+        $scrapy->setParams($this->params);
+
+        return $scrapy;
     }
 }

@@ -119,6 +119,13 @@ class Scrapy
         return $this->parsers;
     }
 
+    public function setParsers(array $parsers): void
+    {
+        foreach ($parsers as $parser) {
+            $this->addParser($parser);
+        }
+    }
+
     /**
      * @return array Associative array representing additional parser's parameters.
      */
