@@ -19,7 +19,8 @@
         "php": "^7.2.5",
         "guzzlehttp/guzzle": "~6.0",
         "symfony/css-selector": "^5.0",
-        "symfony/dom-crawler": "^5.0"
+        "symfony/dom-crawler": "^5.0",
+        "ext-dom": "*"
     },
     "require-dev": {
         "mockery/mockery": "^1.3",
