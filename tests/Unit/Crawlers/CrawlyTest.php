@@ -173,4 +173,47 @@ class CrawlyTest extends TestCase
 
         $this->assertEquals('<html><body><div><ul><li>1</li></ul></div></body></html>', $crawly->html());
     }
+
+    public function test_inner_html_method()
+    {
+        $crawly = new Crawly('<div><ul><li>1</li><li>2</li></ul></div>');
+
+        $html = $crawly->filter('ul')->innerHtml();
+
+        $this->assertEquals('<li>1</li><li>2</li>', $html);
+    }
+
+    public function test_each_method()
+    {
+        $crawly = new Crawly('<div><li>1</li><li>2</li><li>3</li></div>');
+
+        $result = $crawly->filter('li')->each(function (Crawly $item) {
+            return $item->int();
+        });
+
+        $this->assertEquals([1, 2, 3], $result);
+    }
+
+    public function test_each_method_on_selection_with_no_children()
+    {
+        $crawly = new Crawly('<div><span></span></div>');
+
+        $result = $crawly->filter('nope')->each(function (Crawly $item) {
+            return [];
+        });
+
+        $this->assertEmpty($result);
+    }
+
+    public function test_each_method_on_empty_selection()
+    {
+        $crawly = new Crawly('<div><ul><li>1</li><li>2</li></ul></div>');
+
+        $result = $crawly->each(function (Crawly $item) {
+            return $item->count();
+        });
+
+        $this->assertEquals(1, count($result));
+        $this->assertEquals(1, $result[0]);
+    }
 }

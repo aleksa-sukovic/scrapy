@@ -2,9 +2,12 @@
 
 namespace Scrapy\Crawlers;
 
+use DOMNode;
 use Error;
 use Exception;
 use Scrapy\Exceptions\ScrapeException;
+use Scrapy\Traits\HandleCallable;
+use Scrapy\Traits\HandleDom;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -16,6 +19,9 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class Crawly
 {
+    use HandleCallable,
+        HandleDom;
+
     /** @var string Constant for extracting node value. */
     public static $NODE_VALUE = '_text';
 
@@ -206,6 +212,15 @@ class Crawly
         }
     }
 
+    public function innerHtml($default = ''): string
+    {
+        try {
+            return $this->activeCrawler->html($default);
+        } catch (Exception|Error $e) {
+            return $default;
+        }
+    }
+
     /**
      * Determines if current selection exists.
      *
@@ -235,6 +250,30 @@ class Crawly
     {
         $this->crawler = new Crawler($this->html);
         $this->activeCrawler = $this->crawler;
+    }
+
+    public function each(callable $function): array
+    {
+        try {
+            $result = [];
+            foreach ($this->activeCrawler as $node) {
+                $item = $this->callFunction($function, new Crawly($this->nodeInnerHtml($node)));
+
+                if ($item) $result[] = $item;
+            }
+            return $result;
+        } catch (Exception|Error $e) {
+            return [];
+        }
+    }
+
+    public function node(): ?DOMNode
+    {
+        try {
+            return $this->activeCrawler->getNode(0);
+        } catch (Exception|Error $e) {
+            return null;
+        }
     }
 
     /**
