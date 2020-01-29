@@ -13,7 +13,7 @@ class GoogleChromeAgentTest extends TestCase
 
     public function test_it_creates_url_reader()
     {
-        $agent = new GoogleChromeAgent();
+        $agent = new GoogleChromeAgent(0, 0, 0, 0);
         $reader = $agent->reader('https://www.some-url.com');
 
         $this->assertInstanceOf(IUserAgent::class, $agent);
