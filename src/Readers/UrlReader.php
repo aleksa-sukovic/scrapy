@@ -20,6 +20,9 @@ class UrlReader implements IReader
     /** @var Client */
     protected $guzzleClient;
 
+    /** @var array HTTP request configuration */
+    protected $config;
+
     /** @var string */
     protected $url;
 
@@ -31,6 +34,7 @@ class UrlReader implements IReader
     public function __construct(string $url)
     {
         $this->guzzleClient = new Client();
+        $this->config = ['synchronous' => true];
         $this->url = $url;
     }
 
@@ -43,7 +47,7 @@ class UrlReader implements IReader
     public function read(): string
     {
         try {
-            $response = $this->guzzleClient->get(new Uri($this->url), ['synchronous' => true]);
+            $response = $this->guzzleClient->get(new Uri($this->url), $this->config);
 
             return (string) $response->getBody();
         } catch (ClientException|ServerException $e) {
@@ -59,5 +63,25 @@ class UrlReader implements IReader
     public function setClient(Client $client): void
     {
         $this->guzzleClient = $client;
+    }
+
+    /**
+     * Sets the config to be passed to Guzzle Client when making the request.
+     *
+     * @param array $config
+     */
+    public function setConfig(array $config): void
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * Returns current config for Guzzle Client.
+     *
+     * @return array
+     */
+    public function config(): array
+    {
+        return $this->config;
     }
 }
