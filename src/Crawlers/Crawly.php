@@ -252,7 +252,16 @@ class Crawly
         $this->activeCrawler = $this->crawler;
     }
 
-    public function each(callable $function, $limit = null): array
+    /**
+     * Maps each node of current selection to a result of passed-in function.
+     *
+     * @param callable $function(Crawly $crawly, int $index) Map callback function.
+     * @param null $limit Maximum number of time a $function callback will be triggered.
+     *                    If number of nodes is less than limit, instance of Crawly created
+     *                    with empty string will be passed in.
+     * @return array Array containing result of each $function call.
+     */
+    public function map(callable $function, $limit = null): array
     {
         try {
             $result = [];
@@ -272,6 +281,11 @@ class Crawly
         }
     }
 
+    /**
+     * Returns first DOMNode of current selection.
+     *
+     * @return DOMNode|null
+     */
     public function node(): ?DOMNode
     {
         try {

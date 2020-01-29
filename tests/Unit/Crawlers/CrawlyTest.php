@@ -183,33 +183,33 @@ class CrawlyTest extends TestCase
         $this->assertEquals('<li>1</li><li>2</li>', $html);
     }
 
-    public function test_each_method()
+    public function test_map_method()
     {
         $crawly = new Crawly('<div><li>1</li><li>2</li><li>3</li></div>');
 
-        $result = $crawly->filter('li')->each(function (Crawly $item) {
+        $result = $crawly->filter('li')->map(function (Crawly $item) {
             return $item->int();
         });
 
         $this->assertEquals([1, 2, 3], $result);
     }
 
-    public function test_each_method_on_selection_with_no_children()
+    public function test_map_method_on_selection_with_no_children()
     {
         $crawly = new Crawly('<div><span></span></div>');
 
-        $result = $crawly->filter('nope')->each(function (Crawly $item) {
+        $result = $crawly->filter('nope')->map(function (Crawly $item) {
             return [];
         });
 
         $this->assertEmpty($result);
     }
 
-    public function test_each_method_on_empty_selection()
+    public function test_map_method_on_empty_selection()
     {
         $crawly = new Crawly('<div><ul><li>1</li><li>2</li></ul></div>');
 
-        $result = $crawly->each(function (Crawly $item) {
+        $result = $crawly->map(function (Crawly $item) {
             return $item->count();
         });
 
@@ -217,33 +217,33 @@ class CrawlyTest extends TestCase
         $this->assertEquals(1, $result[0]);
     }
 
-    public function test_each_method_with_limit()
+    public function test_map_method_with_limit()
     {
         $crawly = new Crawly('<div><ul><li>1</li></ul></div>');
 
-        $result = $crawly->filter('li')->each(function (Crawly $item) {
+        $result = $crawly->filter('li')->map(function (Crawly $item) {
             return $item->int() === 0 ? 1 : $item->int();
         }, 3);
 
         $this->assertEquals([1, 1, 1], $result);
     }
 
-    public function test_each_method_with_limit_lower_than_number_of_nodes()
+    public function test_map_method_with_limit_lower_than_number_of_nodes()
     {
         $crawly = new Crawly('<ul><li>11</li><li>22</li><li>33</li></ul>');
 
-        $result = $crawly->filter('li')->each(function (Crawly $item) {
+        $result = $crawly->filter('li')->map(function (Crawly $item) {
             return $item->int();
         }, 1);
 
         $this->assertEquals([11], $result);
     }
 
-    public function test_each_method_provides_index()
+    public function test_map_method_provides_index()
     {
         $crawly = new Crawly('<ul><li>1</li><li>2</li><li>3</li></ul>');
 
-        $result = $crawly->filter('li')->each(function (Crawly $item, $index) {
+        $result = $crawly->filter('li')->map(function (Crawly $item, $index) {
             return "item-$index";
         });
 
