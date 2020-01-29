@@ -2,6 +2,10 @@
 
 namespace Scrapy\Tests\Unit\Builders;
 
+use Mockery;
+use Scrapy\Readers\UrlReader;
+use Scrapy\Agents\GoogleAgent;
+use Scrapy\Readers\NullReader;
 use PHPUnit\Framework\TestCase;
 use Scrapy\Builders\ScrapyBuilder;
 use Scrapy\Crawlers\Crawly;
@@ -78,6 +82,46 @@ class ScrapyBuilderTest extends TestCase
 
         $this->assertIsCallable($scrapy->htmlChecker());
         $this->assertEquals('Called!', $scrapy->htmlChecker()());
+    }
+
+    public function test_user_agent_is_set()
+    {
+        $agent = Mockery::mock(GoogleAgent::class);
+        $reader = new UrlReader('https://www.some-url.com');
+
+        $agent->shouldReceive('reader')->with('https://www.some-url.com')->once()->andReturn($reader);
+
+        $scrapy = ScrapyBuilder::make()
+            ->userAgent($agent)
+            ->url('https://www.some-url.com')
+            ->build();
+
+        $this->assertSame($reader, $scrapy->reader());
+    }
+
+    public function test_default_user_agent_is_set_if_no_url_is_provided()
+    {
+        $scrapy = ScrapyBuilder::make()
+            ->userAgent(new GoogleAgent())
+            ->build();
+
+        $this->assertInstanceOf(NullReader::class, $scrapy->reader());
+    }
+
+    public function test_setting_reader_has_higher_precedence_than_setting_agent()
+    {
+        $reader1 = new UrlReader('https://www.google.com');
+        $reader2 = new UrlReader('https://www.youtube.com');
+        $agent = Mockery::mock(GoogleAgent::class);
+
+        $agent->shouldReceive('reader')->once()->andReturn($reader1);
+
+        $scrapy = ScrapyBuilder::make()
+            ->reader($reader2)
+            ->userAgent($agent)
+            ->build();
+
+        $this->assertSame($reader2, $scrapy->reader());
     }
 }
 

@@ -6,6 +6,7 @@ use Scrapy\Scrapy;
 use Scrapy\Readers\IReader;
 use Scrapy\Parsers\IParser;
 use Scrapy\Readers\UrlReader;
+use Scrapy\Agents\IUserAgent;
 use Scrapy\Traits\HandleCallable;
 use Scrapy\Parsers\FunctionParser;
 
@@ -43,6 +44,9 @@ class ScrapyBuilder
 
     /** @var IReader Reader instance to be used. */
     protected $reader;
+
+    /** @var IUserAgent User agent instance to be used if reading from url. */
+    protected $agent;
 
     /** @var array Associative array representing additional parser's parameters. */
     protected $params;
@@ -138,6 +142,18 @@ class ScrapyBuilder
     }
 
     /**
+     * Sets the user agent to be used if reading source is url.
+     *
+     * @param IUserAgent $agent Concrete implementation of IUserAgent interface.
+     * @return ScrapyBuilder
+     */
+    public function userAgent(IUserAgent $agent): ScrapyBuilder
+    {
+        $this->agent = $agent;
+        return $this;
+    }
+
+    /**
      * Creates the new Scrapy instance, discarding the old one.
      *
      * @return ScrapyBuilder
@@ -163,6 +179,8 @@ class ScrapyBuilder
 
         if ($this->url)
             $scrapy->setReader(new UrlReader($this->url));
+        if ($this->url && $this->agent)
+            $scrapy->setReader($this->agent->reader($this->url));
         if ($this->reader)
             $scrapy->setReader($this->reader);
         $scrapy->setParsers($this->parsers);
