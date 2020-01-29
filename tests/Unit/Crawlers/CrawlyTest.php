@@ -216,4 +216,26 @@ class CrawlyTest extends TestCase
         $this->assertEquals(1, count($result));
         $this->assertEquals(1, $result[0]);
     }
+
+    public function test_each_method_with_limit()
+    {
+        $crawly = new Crawly('<div><ul><li>1</li></ul></div>');
+
+        $result = $crawly->filter('li')->each(function (Crawly $item) {
+            return $item->int() === 0 ? 1 : $item->int();
+        }, 3);
+
+        $this->assertEquals([1, 1, 1], $result);
+    }
+
+    public function test_each_method_with_limit_lower_than_number_of_nodes()
+    {
+        $crawly = new Crawly('<ul><li>11</li><li>22</li><li>33</li></ul>');
+
+        $result = $crawly->filter('li')->each(function (Crawly $item) {
+            return $item->int();
+        }, 1);
+
+        $this->assertEquals([11], $result);
+    }
 }

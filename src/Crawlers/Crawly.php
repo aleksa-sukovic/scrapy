@@ -252,15 +252,20 @@ class Crawly
         $this->activeCrawler = $this->crawler;
     }
 
-    public function each(callable $function): array
+    public function each(callable $function, $limit = null): array
     {
         try {
             $result = [];
-            foreach ($this->activeCrawler as $node) {
-                $item = $this->callFunction($function, new Crawly($this->nodeInnerHtml($node)));
+            $limit  = $limit ?? $this->count();
 
+            for ($i = 0; $i < $limit; $i++) {
+                $node = $this->activeCrawler->getNode($i);
+                $crawler = new Crawly($node ? $this->nodeInnerHtml($node) : '');
+
+                $item = $this->callFunction($function, $crawler);
                 if ($item) $result[] = $item;
             }
+
             return $result;
         } catch (Exception|Error $e) {
             return [];
