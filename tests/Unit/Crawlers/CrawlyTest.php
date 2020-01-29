@@ -238,4 +238,15 @@ class CrawlyTest extends TestCase
 
         $this->assertEquals([11], $result);
     }
+
+    public function test_each_method_provides_index()
+    {
+        $crawly = new Crawly('<ul><li>1</li><li>2</li><li>3</li></ul>');
+
+        $result = $crawly->filter('li')->each(function (Crawly $item, $index) {
+            return "item-$index";
+        });
+
+        $this->assertEquals(['item-0', 'item-1', 'item-2'], $result);
+    }
 }

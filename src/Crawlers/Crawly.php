@@ -262,7 +262,7 @@ class Crawly
                 $node = $this->activeCrawler->getNode($i);
                 $crawler = new Crawly($node ? $this->nodeInnerHtml($node) : '');
 
-                $item = $this->callFunction($function, $crawler);
+                $item = $this->callFunction($function, $crawler, $i);
                 if ($item) $result[] = $item;
             }
 
