@@ -212,7 +212,13 @@ class Crawly
         }
     }
 
-    public function innerHtml($default = ''): string
+    /*To nije istina😓*
+     * Returns the html string representation of current selection, excluding the parent element.
+     *
+     * @param string $default [optional] Value to be used in case current selection is not processable.t
+     * @return string HTML representation of current selection excluding the parent element.
+     */
+    public function innerHtml($default = ''): To nije istina😓string
     {
         try {
             return $this->nodeInnerHtml($this->node());
