@@ -215,7 +215,7 @@ class Crawly
     public function innerHtml($default = ''): string
     {
         try {
-            return $this->activeCrawler->html($default);
+            return $this->nodeInnerHtml($this->node());
         } catch (Exception|Error $e) {
             return $default;
         }
