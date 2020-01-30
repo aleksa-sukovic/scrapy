@@ -156,6 +156,9 @@ Once you have your parsers defined, it's time to add them to Scrapy.
 You don't have to write a class for each parser, you can also do inline parsing. Let's see how would that look.
 
 ```php
+    use Scrapy\Crawlers\Crawly;
+    use Scrapy\Builders\ScrapyBuilder;
+
     ScrapyBuilder::make()
         ->parser(function (Crawly $crawly, array $output) {
             $output['count'] = $crawly->filter('li')->count();
@@ -170,6 +173,9 @@ Sometimes you want to pass some extra context to your parsers.
 With Scrapy, you can pass an associative array of parameters which would become available to every parser.
 
 ```php
+    use Scrapy\Crawlers\Crawly;
+    use Scrapy\Builders\ScrapyBuilder;
+
     ScrapyBuilder::make()
         ->params(['foo' => 'bar'])
         ->parser(function (Crawly $crawly, array $output) {
@@ -196,7 +202,6 @@ Instance of Crawly can be made from any string.
 
     $crawly1 = new Crawly('<ul><li>Hello World!</li></ul>');
     $crawly2 = new Crawly('Hello World!');
-    
 
     $crawly1->html(); // '<ul><li>Hello World!</li></ul>'
     $crawly2->html(); // '<body>Hello World!</body>'
@@ -414,6 +419,7 @@ Scrapy comes with some readers predefined, and you can also write your own if yo
 Scrapy comes with two built in readers: `UrlReader` and `FileReader`. Lets see how you may use them.
 
 ```php
+    use Scrapy\Builders\ScrapyBuilder;
     use Scrapy\Readers\UrlReader;
     use Scrapy\Readers\FileReader;
 
@@ -487,6 +493,7 @@ Just like with readers, you can write your own custom user agents.
 
 ```php
     use Scrapy\Agents\IUserAgent;
+    use Scrapy\Readers\UrlReader;
 
     class UserAgent implements IUserAgent
     {
@@ -514,6 +521,10 @@ Setting the url is same as setting the reader to be UrlReader with that url. On 
 reader will have higher precedence over explicitly setting the url and/or user agent.
 
 ```php
+    use Scrapy\Readers\UrlReader;
+    use Scrapy\Agents\GoogleAgent;
+    use Scrapy\Builders\ScrapyBuilder;
+
     ScrapyBuilder::make()
         ->url('https://www.facebook.com')
         ->agent(new GoogleAgent())
