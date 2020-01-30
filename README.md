@@ -5,6 +5,8 @@
 
 PHP web scraping made easy.
 
+Please note: documentation
+
 ## Installation
 
 You can install the package via composer:
@@ -13,9 +15,87 @@ You can install the package via composer:
 composer require scrapy/scrapy
 ```
 
-## Usage
+## Table of contents
 
-Scrapy is meant to allow you atomic HTML parsing from different sources. Below, simplest configuration is show.
+- [Basic Usage](#documentation)
+
+- [Parsers](#parsers)
+
+    - [Parser definition](#parser-definition)
+    
+    - [Adding parser](#adding-parsers)
+    
+    - [Inline parsers](#inline-parsers)
+    
+    - [Passing additional parameters](#passing-additional-parameters-to-parsers)
+
+- [Crawly](#crawly)
+
+    - [Initialisation](#crawler-initialisation)
+    
+    - [Methods](#crawling-methods)
+    
+        - [Filter](#filter)
+        
+        - [First](#first)
+        
+        - [Nth](#nth)
+        
+        - [Raw](#raw)
+        
+        - [Trim](#trim)
+        
+        - [Pluck](#pluck)
+        
+        - [Count](#count)
+        
+        - [Int](#int)
+        
+        - [Float](#float)
+        
+        - [String](#string)
+        
+        - [Html](#html)
+        
+        - [Inner HTML](#inner-html)
+        
+        - [Exists](#exists)
+        
+        - [Reset](#reset)
+        
+        - [Map](#map)
+        
+        - [Node](#node)
+
+- [Readers](#readers)
+
+    - [Using built in readers](#using-built-in-readers)
+    
+    - [Writing custom readers](#writing-custom-readers)
+
+- [User Agents](#user-agents)
+
+    - [Why use custom agents](#why-use-custom-user-agents)
+    
+    - [Using built in agents](#using-built-in-agents)
+    
+    - [Writing custom user agents](#writing-custom-agents)
+
+- [Build steps precedence](#precedence-of-parameters)
+
+- [Exception Handling](#exception-handling)
+
+- [Testing](#testing)
+
+- [Changelog](#changelog)
+
+- [Credits](#credits)
+
+- [License](#license)
+
+## Basic usage
+
+Scrapy is essentially a reader which can modify read data trough series of tasks. To simply read an url you can do the following.
 
 ```php
     use Scrapy\Builders\ScrapyBuilder;
@@ -28,16 +108,17 @@ Scrapy is meant to allow you atomic HTML parsing from different sources. Below, 
 
 ### Parsers
 
-Of course, just reading HTML from some url is not a lot of fun. Scrapy allows you to crawl HTML with simple yet expressive api relying on Symphony's DOM crawler. This is done with the help of **parsers**.
+Just reading HTML from some source is not a lot of fun. Scrapy allows you to crawl HTML with simple yet expressive API relying on Symphony's DOM crawler.
+
+You can think of parsers as actions meant to extract data valuable to you from HTML.
 
 #### Parser definition
 
-Parsers are meant to be atomic, self-containing scraping rules allowing you to extract data from HTML string. Below is an example of simple parser definitinon.
+Parsers are meant to be self-containing scraping rules allowing you to extract data from HTML string.
 
 ```php
     use Scrapy\Parsers\Parser;
     use Scrapy\Crawlers\Crawly;
-    use Scrapy\Builders\ScrapyBuilder;
 
     class ImageParser extends Parser
     {
@@ -72,12 +153,9 @@ Once you have your parsers defined, it's time to add them to Scrapy.
 
 #### Inline parsers
 
-You don't have to write new classes for each parser, you can also inline them. Let's see how would that look.
+You don't have to write a class for each parser, you can also do inline parsing. Let's see how would that look.
 
 ```php
-    use Scrapy\Crawlers\Crawly;
-    use Scrapy\Builders\ScrapyBuilder;
-    
     ScrapyBuilder::make()
         ->parser(function (Crawly $crawly, array $output) {
             $output['count'] = $crawly->filter('li')->count();
@@ -88,12 +166,10 @@ You don't have to write new classes for each parser, you can also inline them. L
 
 #### Passing additional parameters to parsers
 
-Sometimes you want to pass some extra context to your parsers. With Scrapy, you can pass associative array of parameters which would get passed to each parser.
+Sometimes you want to pass some extra context to your parsers. 
+With Scrapy, you can pass an associative array of parameters which would become available to every parser.
 
 ```php
-    use Scrapy\Crawlers\Crawly;
-    use Scrapy\Builders\ScrapyBuilder;
-    
     ScrapyBuilder::make()
         ->params(['foo' => 'bar'])
         ->parser(function (Crawly $crawly, array $output) {
@@ -103,30 +179,32 @@ Sometimes you want to pass some extra context to your parsers. With Scrapy, you 
          });
 ```
 
-No matter how you define your parsers, as separate class or function, if you specify additional parameters, they will receive them.
+The same principle applies no matter if you define parsers as separate classes or inline them with functions.
 
-### Crawling
+## Crawly
 
-You might noticed that first argument to parser's "process" method is instance of a class *Crawly*. Crawly is a HTML crawling class allowing you to fluently crawl HTML. It is based on Symphony's DOM Crawler.
+You might noticed that first argument to parser's *process* method is instance *Crawly* class.
+
+Crawly is an HTML crawling tool. It is based on [Symphony's DOM Crawler](https://symfony.com/doc/current/components/dom_crawler.html).
 
 #### Crawler initialisation
 
-Instance of Crawly can be made from any valid HTML string. Of course, if you provide string that is not valid, Crawly would try to handle that.
+Instance of Crawly can be made from any string.
 
 ```php
     use Scrapy\Crawlers\Crawly;
 
-    $validHtmlCrawly = new Crawly('<ul><li>Hello World!</li></ul>');
-    $invalidHtmlCrawly = new Crawly('Hello World!');
+    $crawly1 = new Crawly('<ul><li>Hello World!</li></ul>');
+    $crawly2 = new Crawly('Hello World!');
     
 
-    $validHtmlCrawly->html();   // '<ul><li>Hello World!</li></ul>'
-    $invalidHtmlCrawly->html(); // '<body>Hello World!</body>'
+    $crawly1->html(); // '<ul><li>Hello World!</li></ul>'
+    $crawly2->html(); // '<body>Hello World!</body>'
 ```
 
 #### Crawling methods
 
-Crawly provides few helper method allowing you to more easily get the wanted data from HTML.
+Crawly provides few helper methods allowing you to more easily get the wanted data from HTML.
 
 ##### Filter
 
@@ -162,9 +240,9 @@ Narrow your selection by taking the nth element from it. Note that indices are 0
 
 Get access to Symphony's DOM crawler.
 
-Even tough Crawly is based on Symphony's DOM crawler, it does not aims to replace it, rather just to make it's usage more pleasant. That's why not all methods are exposed directly trough Crawly.
+Crawly does not aim to replace Symphony's DOM crawler, rather just to make it's usage more pleasant. That's why not all methods are exposed directly trough Crawly.
 
-Introduction `raw` method allowing you to utilise the underlying crawler.
+Using `raw` method allows you to utilise the underlying Symphony's crawler.
 
 ```php
     $crawly = new Crawly('<ul><li>Hello</li><li>World!</li></ul>');
@@ -217,7 +295,7 @@ Returns the integer value of current selection
     $crawly->filter('span')->int(55); // 55
 ```
 
-##### Int
+##### Float
 
 Returns the integer value of current selection
 
@@ -227,12 +305,12 @@ Returns the integer value of current selection
 
     // Use default if selection is not numeric
     $crawly = new Crawly('');
-    $crawly->filter('span')->int(22.4); // 22.4
+    $crawly->filter('span')->float(22.4); // 22.4
 ```
 
 ##### String
 
-Returns current selection inner content as string.
+Returns current selection's inner content as string.
 
 ```php
     $crawly = new Crawly('<span>Hello World!</span>');
@@ -262,24 +340,23 @@ Returns HTML string representation of current selection, excluding the parent el
 
 ```php
     $crawly = new Crawly('<span>Hello World!</span>');
-    $crawly->filter('span')->innerHtml(); // <span>Hello World!</span>
+    $crawly->filter('span')->innerHtml(); // 'Hello World!'
 
-    // Use default in case exception arises
+    // Use default to handle exceptional cases
     $crawly = new Crawly('');
-    $crawly->filter('non-existing-selection')->html('<div>Hi</div>'); // <div>Hi</div>
+    $crawly->filter('non-existing-selection')->innerHtml('<div>Hi</div>'); // 'Hi'
 ```
 
 ##### Exists
 
 Checks if given selection exists. 
 
-You can get boolean response or raise an exception in case given selection does not exists.
+You can get boolean response or raise an exception.
 
 ```php
     $crawly = new Crawly('<span>Hello World!</span>');
     $crawly->filter('span')->exists(); // true
 
-    // Use default in case exception arises
     $crawly = new Crawly('');
     $crawly->filter('non-existing-selection')->exists();     // false
     $crawly->filter('non-existing-selection')->exists(true); // new ScrapeException(...)
@@ -322,12 +399,15 @@ Returns the first DOMNode of the selection.
 
 ```php
     $crawly = new Crawly('<ul><li>1</li></ul>');
-    $crawly = $crawly->filter('li')->node(); // DOMNode representing <li>1</li> is returned
+
+    $crawly = $crawly->filter('li')->node(); // DOMNode representing '<li>1</li>' is returned
 ```
 
 ### Readers
 
-Readers are classes serving as data sources from which HTML is read. Scrapy comes with some reader predefined, and you can write your own if you need to.
+Readers are data source classes used by Scrapy to fetch the HTML content.
+
+Scrapy comes with some readers predefined, and you can also write your own if you need to.
 
 #### Using built in readers
 
@@ -336,7 +416,6 @@ Scrapy comes with two built in readers: `UrlReader` and `FileReader`. Lets see h
 ```php
     use Scrapy\Readers\UrlReader;
     use Scrapy\Readers\FileReader;
-    use Scrapy\Builders\ScrapyBuilder;
 
     ScrapyBuilder::make()
         ->reader(new UrlReader('https://www.some-url.com'));
@@ -344,7 +423,7 @@ Scrapy comes with two built in readers: `UrlReader` and `FileReader`. Lets see h
         ->reader(new FileReader('path-to-file.html'));
 ```
 
-As you can see built in readers allow you to use Scrapy by either reading from a url or from specific file.
+As you can see built in readers allow you to use Scrapy by either reading from a url or from a specific file.
 
 #### Writing custom readers
 
@@ -371,16 +450,17 @@ And then use it during the build process.
 
 ### User agents
 
-A user agent is a computer program representing a person, in this case a Scrapy instance. I provided several built in user agents for simulating different crawlers. Of course, you can
-write your own.
+A user agent is a computer program representing a person, in this case a Scrapy instance. Scrapy provides several built in user agents for simulating different crawlers.
 
 #### Why use custom user agents
 
-User agents make sense only in context of readers that read from some urls. More precisely, in cases where you want to read a web site that creates its content using JavaScript
-(commonly known as SPAs or Single Page Applications).
+User agents make sense only in a context of readers that fetch their data over HTTP protocol. More precisely, in cases where you want to read a web page that creates its content dynamically using JavaScript.
 
-Scrapy by default can not parse and execute JavaScript files. The possible solution for this is for Scrapy to represent itself as some other user agent, possibly allowing web sites
-to serve different content made specifically for crawling needs using services like [Prerender](https://prerender.io/).
+Scrapy by default can not parse JavaScript files. This is a problem all web crawlers face. There are numerous techniques for overcoming this problem, 
+usually by using external services like [Prerender](https://prerender.io/) which redirect crawling bots to cached HTML pages.
+
+Several user agents are provided to allow Scrapy to represent itself as some of the common user agents. Please not  that in case a web page implements more advance crawling security checks
+(for example an IP check) than provided checker would fail, since they only modify the HTTP request headers.
 
 If you want to find out more, there is a great article on pre-rendering over at [Netlify](https://www.netlify.com/blog/2016/11/22/prerendering-explained/).
 
@@ -430,7 +510,7 @@ And then use it during the build process.
 
 One thing to note is the precedence of different parameters you may set during the build process.
 
-Setting the url is same as setting the reader to be UrlReader with wanted url. On the other hand, explicitly setting 
+Setting the url is same as setting the reader to be UrlReader with that url. On the other hand, explicitly setting 
 reader will have higher precedence over explicitly setting the url and/or user agent.
 
 ```php
@@ -442,11 +522,11 @@ reader will have higher precedence over explicitly setting the url and/or user a
 
 ### Exception handling
 
-In general, Scrapy tries to handle all possible exceptions wrapping them in base Scrapy exception class: ScrapeException.
+In general, Scrapy tries to handle all possible exceptions wrapping them in base Scrapy exception class: *ScrapeException*.
 
-What this means is that you can organize your app around single exception for general error handling.
+What this means is that you can organize your app around a single exception for general error handling.
 
-A more granular system for error handling is planned for future releases, that will allow you to react to specific parser exceptions.
+A more granular system is planned for future release which would allow you to react to a specific parser exceptions.
 
 ```php
         use Scrapy\Builders\ScrapyBuilder;
@@ -463,6 +543,8 @@ A more granular system for error handling is planned for future releases, that w
 ```
 
 ### Testing
+
+To run entire suite of unit tests you can do:
 
 ``` bash
 composer test
