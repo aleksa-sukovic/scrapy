@@ -5,13 +5,13 @@ namespace Scrapy\Agents;
 use Scrapy\Readers\UrlReader;
 
 /**
- * Class YahooUserAgent.
+ * Class DuckUserAgent.
  *
- * Simulation of Yahoo user agent.
+ * Simulation of DuckDuckGo user agent.
  *
  * @package Scrapy\Agents
  */
-class YahooUserAgent implements IUserAgent
+class DuckUserAgent implements IUserAgent
 {
     /**
      * Guzzle Client configuration array.
@@ -21,7 +21,7 @@ class YahooUserAgent implements IUserAgent
     protected $config = [
         'synchronous' => true,
         'headers' => [
-            'User-Agent' => 'Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)',
+            'User-Agent' => 'DuckDuckBot/1.0; (+http://duckduckgo.com/duckduckbot.html)',
         ]
     ];
 
