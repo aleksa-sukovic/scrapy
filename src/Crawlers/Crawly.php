@@ -109,9 +109,9 @@ class Crawly
 	public function pluck($attributes)
 	{
 		try {
-		    $attributes = is_array($attributes) ? $attributes : [$attributes];
+			$result = $this->activeCrawler->extract($attributes);
 
-			return $this->activeCrawler->extract($attributes)[0];
+			return count($result) > 1 ? $result : $result[0];
 		} catch (Exception|Error $e) {
 			return [];
 		}

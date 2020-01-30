@@ -58,7 +58,7 @@ class CrawlyTest extends TestCase
 
         $this->assertEquals(
             'https://www.google.com',
-            $crawly->filter('a')->pluck('href')
+            $crawly->filter('a')->pluck(['href'])
         );
     }
 
@@ -248,5 +248,12 @@ class CrawlyTest extends TestCase
         });
 
         $this->assertEquals(['item-0', 'item-1', 'item-2'], $result);
+    }
+
+    public function test_non_html_string_is_transformed()
+    {
+        $crawly = new Crawly('Hello World!');
+
+        $this->assertEquals('<body>Hello World!</body>', $crawly->html());
     }
 }
