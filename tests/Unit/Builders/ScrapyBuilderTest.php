@@ -92,7 +92,7 @@ class ScrapyBuilderTest extends TestCase
         $agent->shouldReceive('reader')->with('https://www.some-url.com')->once()->andReturn($reader);
 
         $scrapy = ScrapyBuilder::make()
-            ->userAgent($agent)
+            ->agent($agent)
             ->url('https://www.some-url.com')
             ->build();
 
@@ -102,7 +102,7 @@ class ScrapyBuilderTest extends TestCase
     public function test_default_user_agent_is_set_if_no_url_is_provided()
     {
         $scrapy = ScrapyBuilder::make()
-            ->userAgent(new GoogleAgent())
+            ->agent(new GoogleAgent())
             ->build();
 
         $this->assertInstanceOf(NullReader::class, $scrapy->reader());
@@ -118,7 +118,7 @@ class ScrapyBuilderTest extends TestCase
 
         $scrapy = ScrapyBuilder::make()
             ->reader($reader2)
-            ->userAgent($agent)
+            ->agent($agent)
             ->build();
 
         $this->assertSame($reader2, $scrapy->reader());

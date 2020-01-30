@@ -147,7 +147,7 @@ class ScrapyBuilder
      * @param IUserAgent $agent Concrete implementation of IUserAgent interface.
      * @return ScrapyBuilder
      */
-    public function userAgent(IUserAgent $agent): ScrapyBuilder
+    public function agent(IUserAgent $agent): ScrapyBuilder
     {
         $this->agent = $agent;
         return $this;
