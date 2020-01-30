@@ -190,7 +190,7 @@ class Crawly
 	{
 		try {
 			$value = (string) $this->activeCrawler->text();
-			$value = $this->trim ? trim($value) : $value;
+			$value = $this->trim ? trim(preg_replace('/\s+/', ' ', $value)) : $value;
 			return $value;
 		} catch (Exception|Error $e) {
 			return $default;
