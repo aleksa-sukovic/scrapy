@@ -1,11 +1,11 @@
 # Scrapy
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/aleksa-sukovic/scrapy.svg?style=flat-square)](https://packagist.org/packages/aleksa-sukovic/scrapy)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/scrapy/scrapy.svg?style=flat-square)](https://packagist.org/packages/aleksa-sukovic/scrapy)
 [![Build Status](https://travis-ci.com/aleksa-sukovic/scrapy.svg?token=zCspA5s4zGkRNiq8zzR1&branch=master)](https://travis-ci.com/aleksa-sukovic/scrapy)
 
 PHP web scraping made easy.
 
-Please note: documentation
+Please note: *Documentation is always a work in progress, please excuse any errors.*
 
 ## Installation
 
