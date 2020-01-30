@@ -2,140 +2,187 @@
 
 namespace Scrapy;
 
+use Error;
 use Exception;
-use Scrapy\Exceptions\ScrapeException;
-use Scrapy\Reader\Reader;
+use Scrapy\Crawlers\Crawly;
+use Scrapy\Readers\IReader;
+use Scrapy\Parsers\IParser;
+use Scrapy\Readers\NullReader;
 use Scrapy\Traits\HandleCallable;
-use Symfony\Component\DomCrawler\Crawler;
+use Scrapy\Exceptions\ScrapeException;
 
+/**
+ * Class Scrapy.
+ *
+ * @package Scrapy
+ */
 class Scrapy
 {
     use HandleCallable;
 
-    /**
-     * @var string[]
-     */
-    protected $parsers;
-
-    /**
-     * @var Reader
-     */
+    /** @var IReader */
     protected $reader;
 
-    /**
-     * @var callable
-     */
-    protected $beforeScrapeCallback;
+    /** @var callable|null Optional callback function to check HTML validity.  */
+    protected $htmlCheckerFunction;
 
-    /**
-     * @var callable
-     */
-    protected $afterScrapeCallback;
+    /** @var string String representation of HTML to be scraped. */
+    protected $html;
 
-    /**
-     * @var array
-     */
+    /** @var array<IParser> Array of parsers to be run. */
+    protected $parsers;
+
+    /** @var array Associative array of params to be passed to each parser. */
     protected $params;
 
     /**
-     * @var array
+     * Scrapy constructor.
      */
-    protected $errors;
-
     public function __construct()
     {
         $this->parsers = [];
-        $this->errors = [];
         $this->params = [];
-        $this->reader = new Reader;
-        $this->beforeScrapeCallback = null;
-        $this->afterScrapeCallback = null;
+        $this->html = '';
+        $this->reader = new NullReader();
+        $this->htmlCheckerFunction = null;
     }
 
     /**
-     * @param string $url
+     * Runs the read string trough available parsers returning.
      *
-     * @return array
-     * @throws ScrapeException
+     * @return array Scraping result after running trough all parsers.
+     * @throws ScrapeException In case html validation or any of the parsers fail.
      */
-    public function scrape(string $url)
+    public function scrape(): array
     {
-        $html = $this->reader->read($url);
-        $result = [];
+        try {
+            $this->html = $this->reader()->read();
+            $this->runValidityChecker($this->html);
 
-        $crawler = new Crawler($html);
-        $crawler = $this->isFunction($this->beforeScrapeCallback) ?
-            $this->callFunction($this->beforeScrapeCallback, $crawler) : $crawler;
+            return $this->runParsers(new Crawly($this->html));
+        } catch (Exception|Error $e) {
+            throw new ScrapeException($e->getMessage(), $e->getCode());
+        }
+    }
 
-        foreach ($this->parsers as $parser) {
-            try {
-                app($parser)->process($crawler, $result, $this->params);
-            } catch (Exception $e) {
-                $this->errors[] = ['parser' => $parser, 'message' => $e->getMessage(), 'code' => $e->getCode()];
-            }
+    /**
+     * Checks if given HTML string is valid by running it trough callback function.
+     *
+     * @param string $html HTML string to be checked.
+     * @throws ScrapeException In case htmlCheckerFunction exists and returns false indicating that given HTML string is not valid.
+     */
+    private function runValidityChecker(string $html): void
+    {
+        if (!$this->isFunction($this->htmlCheckerFunction)) {
+            return;
         }
 
-        $result = $this->isFunction($this->afterScrapeCallback) ?
-            $this->callFunction($this->afterScrapeCallback, $result) : $result;
+        if (!$this->callFunction($this->htmlCheckerFunction, new Crawly($html))) {
+            throw new ScrapeException('Page html validation failed.', 400);
+        }
+    }
 
+    /**
+     * Passes given Crawly crawler trough available parsers.
+     *
+     * @param Crawly $crawly Instance of crawler made from read HTML string.
+     * @return array Concatenated output of all parsers.
+     */
+    private function runParsers(Crawly $crawly): array
+    {
+        $result = [];
+        foreach ($this->parsers as $parser) {
+            $crawly->reset();
+
+            $result = $parser->process($crawly, $result, $this->params);
+        }
         return $result;
     }
 
     /**
-     * @param callable $callback
-     *     - Function to be called before running raw html trough parsers.
-     * 		 Function receives string representing raw html of page.
+     * Adds specified parser to available parsers array.
      *
-     * @return Scrapy
+     * @param IParser $parser Concrete instance of IParser interface.
      */
-    public function beforeScrape(callable $callback): Scrapy
+    public function addParser(IParser $parser): void
     {
-        $this->beforeScrapeCallback = $callback;
+        $parser->setParams($this->params);
 
-        return $this;
+        $this->parsers[] = $parser;
     }
 
     /**
-     * @param callable $callback
-     *     - Function to be called after parsers have processed the input.
-     *       Processed object is passed as first argument of the function.
-     *
-     * @return Scrapy
+     * @return array<IParser> Array of available parsers.
      */
-    public function afterScrape(callable $callback): Scrapy
+    public function parsers(): array
     {
-        $this->afterScrapeCallback = $callback;
+        return $this->parsers;
+    }
 
-        return $this;
+    public function setParsers(array $parsers): void
+    {
+        foreach ($parsers as $parser) {
+            $this->addParser($parser);
+        }
     }
 
     /**
-     * @param string[] $parsers
-     *     - Array of parser's class names.
-     *
-     * @return Scrapy
+     * @return array Associative array representing additional parser's parameters.
      */
-    public function withParsers(array $parsers): Scrapy
+    public function params(): array
     {
-        $this->parsers = $parsers;
-
-        return $this;
+        return $this->params;
     }
 
-    public function withParams(array $params): Scrapy
+    /**
+     * @param array $params Associative array representing additional parameters to be passed to each parser.
+     */
+    public function setParams(array $params): void
     {
         $this->params = $params;
 
-        return $this;
+        foreach ($this->parsers as $parser) {
+            $parser->setParams($params);
+        }
     }
 
-    public function errors(): array
+    /**
+     * @return IReader Reader associated with this Scrapy instance.
+     */
+    public function reader(): IReader
     {
-        return $this->errors;
+        return $this->reader;
     }
 
-    public function hasErrors(): bool
+    /**
+     * @param IReader $reader IReader implementation to be injected into this Scrapy instance.
+     */
+    public function setReader(IReader $reader): void
     {
-        return count($this->errors) > 0;
+        $this->reader = $reader;
+    }
+
+    /**
+     * @param $function(Crawly $crawly): bool Function to be called for checking validity of HTML string.
+     */
+    public function setHtmlChecker($function): void
+    {
+        $this->htmlCheckerFunction = $function;
+    }
+
+    /**
+     * @return callable Currently set callback function for checking validity of HTML string.
+     */
+    public function htmlChecker(): ?callable
+    {
+        return $this->htmlCheckerFunction;
+    }
+
+    /**
+     * @return string String representing HTML to be scraped.
+     */
+    public function html(): string
+    {
+        return $this->html;
     }
 }
